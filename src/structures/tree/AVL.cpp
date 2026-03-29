@@ -61,7 +61,3 @@ TreeNode* AVL::insert(TreeNode* node, int key) {
 
     return node;
 }
-
-void AVL::insertAnimation(int key) {
-    root = insert(root, key);
-}

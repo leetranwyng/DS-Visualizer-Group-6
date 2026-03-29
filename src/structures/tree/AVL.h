@@ -25,5 +25,4 @@ struct AVL {
     TreeNode* leftRotation (TreeNode* node);
     TreeNode* rightRotation (TreeNode* node);
     TreeNode* insert(TreeNode* node, int key);
-    void insertAnimation(int key);
 };
