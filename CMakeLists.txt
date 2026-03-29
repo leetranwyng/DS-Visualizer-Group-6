@@ -8,7 +8,7 @@ include(FetchContent)
 FetchContent_Declare(
     raylib
     GIT_REPOSITORY https://github.com/raysan5/raylib.git
-    GIT_TAG 5.0 # You can change this to master for the bleeding-edge version
+    GIT_TAG master # You can change this to master for the bleeding-edge version
 )
 FetchContent_MakeAvailable(raylib)
 
