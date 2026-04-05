@@ -1,4 +1,4 @@
-#include "UI.h"
+﻿#include "UI.h"
 
 // BUTTON
 Button::Button(float x, float y, float width, float height, string text, Color color) {
@@ -11,13 +11,17 @@ void Button::draw() {
     DrawRectangleRec(rect, color);
     DrawRectangleLinesEx(rect, 2, BLACK);
 
-    int textWidth = MeasureText(text.c_str(), 25);
-    DrawText(text.c_str(), rect.x + (rect.width - textWidth) / 2, rect.y + (rect.height - 20) / 2, 25, BLACK);
+    int fontSize = 16;
+    int textWidth = MeasureText(text.c_str(), fontSize);
+
+    int textX = (int)(rect.x + (rect.width - textWidth) / 2);
+    int textY = (int)(rect.y + (rect.height - fontSize) / 2);
+
+    DrawText(text.c_str(), textX, textY, fontSize, BLACK);
 }
 
 bool Button::isPressed(Vector2 mousePos, bool mousePressed) {
-    if (CheckCollisionPointRec(mousePos, rect) && mousePressed) return true;
-    return false;
+    return CheckCollisionPointRec(mousePos, rect) && mousePressed;
 }
 
 // INPUT TEXT BOX
@@ -27,8 +31,8 @@ InputBox::InputBox(float x, float y, float width, float height, Color bg, Color 
     letterCount = 0;
     framesCounter = 0;
     boxPressed = false;
-    this->boxColor = bg;
-    this->textColor = txt;
+    boxColor = bg;
+    textColor = txt;
 }
 
 void InputBox::Update() {
@@ -61,8 +65,11 @@ void InputBox::Update() {
 
 void InputBox::Draw() {
     DrawRectangleRec(rect, boxColor);
-    if (boxPressed) DrawRectangleLines((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height, RED);
-    else DrawRectangleLines((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height, DARKGRAY);
+
+    if (boxPressed)
+        DrawRectangleLines((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height, RED);
+    else
+        DrawRectangleLines((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height, DARKGRAY);
 
     DrawText(text, (int)rect.x + 5, (int)rect.y + 10, 21, textColor);
 
@@ -74,7 +81,7 @@ void InputBox::Draw() {
 }
 
 int InputBox::GetValue() {
-    if (letterCount > 0) return std::stoi(text);
+    if (letterCount > 0) return stoi(text);
     return -1;
 }
 
@@ -85,8 +92,7 @@ void InputBox::Clear() {
 
 void InputBox::checkPressed(Vector2 mousePos, bool mousePressed) {
     if (mousePressed) {
-        if (CheckCollisionPointRec(mousePos, rect)) boxPressed = true;
-        else boxPressed = false;
+        boxPressed = CheckCollisionPointRec(mousePos, rect);
     }
 }
 
@@ -97,14 +103,15 @@ void DrawLabel(float x, float y, string text, Color color) {
 
 void DrawFlatButton(Rectangle rect, string text, Color bgColor, bool leftAlign) {
     DrawRectangleRec(rect, bgColor);
-    DrawLine((int)rect.x, (int)(rect.y + rect.height), (int)(rect.x + rect.width), (int)(rect.y + rect.height), { 255, 255, 255, 40 });
+    DrawLine((int)rect.x, (int)(rect.y + rect.height), (int)(rect.x + rect.width), (int)(rect.y + rect.height), Color{ 255, 255, 255, 40 });
+
     int textY = (int)rect.y + ((int)rect.height - 20) / 2;
     if (leftAlign) {
         DrawText(text.c_str(), (int)rect.x + 15, textY, 20, RAYWHITE);
     }
     else {
         int textWidth = MeasureText(text.c_str(), 20);
-        DrawText(text.c_str(), (int)rect.x + ((int)rect.width - textWidth) / 2, textY, 20, RAYWHITE);
+        DrawText(text.c_str(), (int)(rect.x + (rect.width - textWidth) / 2), textY, 20, RAYWHITE);
     }
 }
 
@@ -132,22 +139,19 @@ void Slider::Update(Vector2 mousePos, bool mouseDown) {
         float percent = (mousePos.x - bounds.x) / bounds.width;
         if (percent < 0.0f) percent = 0.0f;
         if (percent > 1.0f) percent = 1.0f;
-
         currentValue = minValue + percent * (maxValue - minValue);
     }
 }
 
 void Slider::Draw() {
-    DrawRectangle(bounds.x, bounds.y + bounds.height / 2 - 2, bounds.width, 4, LIGHTGRAY);
+    DrawRectangle((int)bounds.x, (int)(bounds.y + bounds.height / 2 - 2), (int)bounds.width, 4, LIGHTGRAY);
 
     float percent = (currentValue - minValue) / (maxValue - minValue);
-    DrawRectangle(bounds.x, bounds.y + bounds.height / 2 - 2, bounds.width * percent, 4, DARKGRAY);
+    DrawRectangle((int)bounds.x, (int)(bounds.y + bounds.height / 2 - 2), (int)(bounds.width * percent), 4, DARKGRAY);
 
     float knobX = bounds.x + bounds.width * percent;
-    Color knobColor;
-    if (isDragging) knobColor = RED;
-    else knobColor = { 210, 80, 50, 255 }; 
-    DrawRectangle(knobX - 5, bounds.y, 10, bounds.height, knobColor);
+    Color knobColor = isDragging ? RED : Color{ 210, 80, 50, 255 };
+    DrawRectangle((int)(knobX - 5), (int)bounds.y, 10, (int)bounds.height, knobColor);
 }
 
 float Slider::GetValue() {
