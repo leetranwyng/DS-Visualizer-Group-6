@@ -2,6 +2,7 @@
 #include <vector>
 #include <raylib.h>
 #include <string>
+#include "../../UI/UI.h"
 using namespace std;
 
 struct edge
@@ -17,11 +18,17 @@ struct cmp
     }
 };
 
+struct state
+{
+    int node, updatedNode, newDis;
+};
+
 struct Dijkstra
 {
     int size;
     vector<vector<edge>> adj;
-
+    vector<state> history;
+    
     void build_size();
     void build_edge(int u, int v, int w);
     void implement(int sNode);

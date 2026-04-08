@@ -9,6 +9,7 @@
 
 void Dijkstra::build_size()
 {
+    adj.clear();
     adj.resize(size);
 }
 
@@ -21,6 +22,8 @@ void Dijkstra::implement(int sNode)
 {
     vector<int> d;
     d.resize(size);
+    history.clear();
+
     for (int i=0;i<size;i++) d[i] = INT_MAX;
 
     priority_queue<edge,vector<edge>,cmp> q;
@@ -40,7 +43,8 @@ void Dijkstra::implement(int sNode)
             {
                 d[v.node] = d[u.node] + v.weight;
                 q.push({v.node, d[v.node]});
-            }
+            } 
+            history.push_back({u.node, v.node, d[v.node]});
         }
     }
 
@@ -116,13 +120,17 @@ void Dijkstra::randomGraph(int n)
     int max = min(n*3/2,n*(n-1)/2);
     int edge = tool.random(min(n,max),max);
     map<pair<int,int>, bool> used;
+
     for (int i=0;i<edge;i++)
     {
         int u = tool.random(0,n-1);
         int v = tool.random(0,n-1);
+        int cnt = 0;
         while(u==v || used[{u,v}] || used[{v,u}])
         {
             v = tool.random(0,n-1);
+            cnt++;
+            if (cnt>100) break;
         }
         int w = tool.random(1,50);
         build_edge(u,v,w);
@@ -132,6 +140,7 @@ void Dijkstra::randomGraph(int n)
 
 void UI::placeNode(Dijkstra* &logic)
 {
+    node.clear();
     node.resize(logic->size);
     vector<Vector2> pos;
 
