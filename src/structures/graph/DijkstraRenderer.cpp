@@ -22,9 +22,13 @@ void RenderDijkstra()
     Button* next_button = new Button(1000, 250, 200, 50, "Next Step", LIGHTGRAY);
     Tool* tool = new Tool;
 
+    Button* back_button = new Button(1000, 350, 200, 50, "Back Step", LIGHTGRAY);
+
     int sourceNode = -1, old_sourceNode = -1;
     int isNextStep = 0;
-    vector<state> currentHistory;
+    vector<state> currentHistory, oldHistory;
+
+    vector<vector<int>> disHistory(1000, vector<int>(1, 1e9));
 
     float sTime, interval;
     while (!WindowShouldClose())
@@ -37,10 +41,20 @@ void RenderDijkstra()
         
         
         random_button->draw();
-        if (random_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
+        if (!isNextStep && random_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
         {
             Graph->randomGraph(tool->random(2,7));
             Visual->placeNode(Graph);
+            sourceNode = -1;
+            old_sourceNode = -1;
+
+            oldHistory.clear();
+
+            for (int i=0;i<Graph->size;i++)
+            {
+                disHistory[i].clear();
+                disHistory[i].push_back(1e9);
+            }
         }
 
         
@@ -50,17 +64,35 @@ void RenderDijkstra()
         sourceNode = source_node->GetValue();
         source_node->Update();
         
+        //cout<<sourceNode<<endl;
         
-        if (sourceNode!=-1 && sourceNode<Graph->size && sourceNode!=old_sourceNode)
+        if (!isNextStep && sourceNode!=-1 && sourceNode<Graph->size && sourceNode!=old_sourceNode)
         { 
             Graph->implement(sourceNode);
+            
+            for (int i=0; i<Graph->size; i++)
+            {
+                Visual->node[i].d = 1e9;
+            }
+
             old_sourceNode = sourceNode;
             Visual->node[sourceNode].d = 0;
+            
+            for (int i=0;i<Graph->size;i++)
+            {
+                disHistory[i].clear();
+                disHistory[i].push_back(1e9);
+            }
+
+            disHistory[sourceNode][0] = 0;
+
+            oldHistory.clear();
         }
+        
 
         
         next_button->draw();
-        if (next_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
+        if (!isNextStep && next_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
         {
             if (Graph->history.size())
             {
@@ -69,13 +101,60 @@ void RenderDijkstra()
                 currentHistory.push_back(s);
 
                 Graph->history.erase(Graph->history.begin());
+                
+                state upd = s;
+                disHistory[upd.updatedNode].push_back(upd.newDis);
+                int indexMax = disHistory[upd.updatedNode].size();
+                oldHistory.push_back(upd);
+
+
                 while(Graph->history.size() && Graph->history[0].node==s.node)
                 {
+
+                    upd = Graph->history[0];
+                    disHistory[upd.updatedNode].push_back(upd.newDis);
+                    indexMax = disHistory[upd.updatedNode].size();
+
                     currentHistory.push_back(Graph->history[0]);
+                    oldHistory.push_back(Graph->history[0]);
                     Graph->history.erase(Graph->history.begin());
                 }
+
+                for (int i=0;i<Graph->size;i++)
+                {
+                    if (disHistory[i].size()<indexMax)
+                    {
+                        disHistory[i].push_back(disHistory[i].back());
+                    }
+                }
+
                 isNextStep = currentHistory.size();
                 interval = GetTime();
+            }
+        }
+
+        back_button->draw();
+        if (!isNextStep && back_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
+        {
+            if (oldHistory.size())
+            {
+                state s = oldHistory.back();
+                oldHistory.pop_back();
+
+                Graph->history.insert(Graph->history.begin(), s);
+                while(oldHistory.size() && oldHistory.back().node==s.node)
+                {
+                    Graph->history.insert(Graph->history.begin(), oldHistory.back());
+                    oldHistory.pop_back();
+                }
+
+                for (int i=0;i<Graph->size;i++)
+                {
+                    disHistory[i].pop_back();
+                    Visual->node[i].d = disHistory[i].back();
+                }
+
+
             }
         }
 
