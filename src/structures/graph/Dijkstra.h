@@ -49,7 +49,7 @@ struct Tool
     string convert(int w);
     bool isInNode(Vector2 pos, Vector2 node, float radius);
     int posToNode(Vector2 pos, vector<Node> &node, float radius);
-    void drawArrow(Vector2 u, Vector2 v, float radius);
+    void drawArrow(Vector2 u, Vector2 v, float radius, Color color);
 };
 
 struct UI

@@ -93,7 +93,7 @@ int Tool::posToNode(Vector2 pos, vector<Node> &node, float radius)
     return -1;
 }
 
-void Tool::drawArrow(Vector2 u, Vector2 v, float radius)
+void Tool::drawArrow(Vector2 u, Vector2 v, float radius, Color color)
 {
     Vector2 direction = {v.x - u.x, v.y - u.y};
     float len = sqrt(direction.x*direction.x + direction.y*direction.y);
@@ -109,7 +109,7 @@ void Tool::drawArrow(Vector2 u, Vector2 v, float radius)
     Vector2 v1 = {touch.x - direction.x*size + per.x*size*0.5f, touch.y - direction.y*size + per.y*size*0.5f};
     Vector2 v2 = {touch.x - direction.x*size - per.x*size*0.5f, touch.y - direction.y*size - per.y*size*0.5f};
     //cout<< touch.x << ' '<<touch.y<<' '<<v1.x<<' '<<v1.y<<' '<<v2.x<< ' '<<v2.y<<endl;
-    DrawTriangle(touch,v2,v1, DARKGRAY);
+    DrawTriangle(touch,v2,v1, color);
 }
 
 void Dijkstra::randomGraph(int n)
@@ -167,7 +167,7 @@ void UI::drawNode(Dijkstra* &logic)
             Vector2 posV = node[v.node].pos;
 
             DrawLineEx(posU, posV, 2.0f, DARKGRAY);
-            tool.drawArrow(posU, posV, radius);
+            tool.drawArrow(posU, posV, radius, DARKGRAY);
             Vector2 midpoint = {(posU.x+posV.x)/2, (posU.y+posV.y)/2};
             string s = tool.convert(v.weight);
             const char* d = s.c_str();

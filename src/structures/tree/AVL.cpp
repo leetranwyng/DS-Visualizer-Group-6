@@ -1,5 +1,5 @@
 #include "AVL.h"
-//LOGIC
+
 int AVL::getHeight (TreeNode* node) {
     if (!node) return 0;
     return node->height;
@@ -32,11 +32,7 @@ TreeNode* AVL::rightRotation (TreeNode* node) {
 }
 
 TreeNode* AVL::insert(TreeNode* node, int key) {
-    if (isVisualizing && node) events.push_back({"visit", node->value}); //VISIT NODE EVENT
-    if (!node) {
-        if (isVisualizing) events.push_back({"insert", node->value}); //INSER NODE EVENT
-        return new TreeNode(key);
-    }
+    if (!node) return new TreeNode(key);
 
     if (key == node->value) return node;
     else if (key < node->value) node->left = insert(node->left, key);
@@ -46,39 +42,22 @@ TreeNode* AVL::insert(TreeNode* node, int key) {
     int balance = balanceFactor(node);
     //LEFT-LEFT
     if (balance > 1 && key < node->left->value) {
-        if (isVisualizing) events.push_back({"rotate-right", node->value});
         return rightRotation(node);
     }
     //RIGHT-RIGHT
     if (balance < -1 && key > node->right->value) {
-        if (isVisualizing) events.push_back({"rotate-left", node->value});
         return leftRotation(node);
     }
     //RIGHT-LEFT
     if (balance < -1 && key < node->right->value) {
-        if (isVisualizing) events.push_back({"rotate-right", node->right->value});
-        if (isVisualizing) events.push_back({"rotate-left", node->value});
         node->right = rightRotation(node->right);
         return leftRotation(node);
     }
     //LEFT-RIGHT
     if (balance > 1 && key > node->left->value) {
-        if (isVisualizing) events.push_back({"rotate-left", node->left->value});
-        if (isVisualizing) events.push_back({"rotate-right", node->value});
         node->left = leftRotation(node->left);
         return rightRotation(node);
     }
 
     return node;
-}
-
-void AVL::insertAnimation(int key, bool visualizing) {
-    if (isVisualizing) {
-        events.clear();
-        step = 0;
-        stepTimer = 0;
-        isVisualizing = true;
-    } else isVisualizing = false;
-
-    root = insert(root, key);
 }

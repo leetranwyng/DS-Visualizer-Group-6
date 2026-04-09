@@ -22,10 +22,11 @@ void RenderDijkstra()
     Button* next_button = new Button(1000, 250, 200, 50, "Next Step", LIGHTGRAY);
     Tool* tool = new Tool;
 
-    int c;
-    bool isNextStep = 0;
+    int sourceNode = -1, old_sourceNode = -1;
+    int isNextStep = 0;
     vector<state> currentHistory;
 
+    float sTime, interval;
     while (!WindowShouldClose())
     {
         BeginDrawing();
@@ -45,14 +46,16 @@ void RenderDijkstra()
         
         source_node->Draw();
         source_node->checkPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON));
-        c = source_node->GetValue();
+        
+        sourceNode = source_node->GetValue();
         source_node->Update();
         
         
-        if (c!=-1 && c<Graph->size)
+        if (sourceNode!=-1 && sourceNode<Graph->size && sourceNode!=old_sourceNode)
         { 
-            Graph->implement(c);
-            c = -1;
+            Graph->implement(sourceNode);
+            old_sourceNode = sourceNode;
+            Visual->node[sourceNode].d = 0;
         }
 
         
@@ -62,6 +65,7 @@ void RenderDijkstra()
             if (Graph->history.size())
             {
                 state s = Graph->history[0];
+                currentHistory.clear();
                 currentHistory.push_back(s);
 
                 Graph->history.erase(Graph->history.begin());
@@ -70,13 +74,66 @@ void RenderDijkstra()
                     currentHistory.push_back(Graph->history[0]);
                     Graph->history.erase(Graph->history.begin());
                 }
-                isNextStep = 1;
+                isNextStep = currentHistory.size();
+                interval = GetTime();
             }
         }
 
         if (isNextStep)
         {
-            cout<<1;
+            state s = currentHistory[currentHistory.size()-isNextStep];
+            
+            if (GetTime()-interval > 1.0)
+            {
+
+                Vector2 posU = Visual->node[s.node].pos;
+                Vector2 posV = Visual->node[s.updatedNode].pos;
+
+                DrawLineEx(posU, posV, 2.0f, GREEN);
+                DrawCircle(posU.x, posU.y, Visual->radius, WHITE);
+                DrawCircle(posV.x, posV.y, Visual->radius, WHITE);
+                DrawCircle(posU.x, posU.y, Visual->radius, {120,120,120,225});
+                DrawCircle(posV.x, posV.y, Visual->radius, {120,120,120,225});
+
+                string s1 = tool->convert(s.node);
+                const char* c1 = s1.c_str();
+                DrawText(c1, posU.x-7, posU.y-14, 30, BLACK);
+
+                s1 = tool->convert(s.updatedNode);
+                const char* c2 = s1.c_str();
+                DrawText(c2, posV.x-7, posV.y-14, 30, BLACK);
+
+                tool->drawArrow(posU, posV, Visual->radius, GREEN);
+                
+                
+            }
+
+            if (GetTime()-interval > 2.0)
+            {
+                Vector2 pos = Visual->node[s.updatedNode].pos;
+                DrawCircle(pos.x, pos.y, Visual->radius, ORANGE);
+                //DrawCircle(pos.x, pos.y, Visual->radius, {120,120,120,225});
+                //DrawCircleLines(pos.x, pos.y, radius, BLACK);
+
+                string s1 = tool->convert(s.updatedNode);
+                const char* c1 = s1.c_str();
+                DrawText(c1, pos.x-7, pos.y-14, 30, BLACK);
+
+               
+            }
+
+            if (GetTime()-interval > 2.5)
+            {
+                Visual->node[s.updatedNode].d = s.newDis;
+            }
+
+            if (GetTime()-interval > 3.0)
+            {
+                isNextStep--;
+                interval = GetTime();
+            }
+
+
         }
 
 
