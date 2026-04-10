@@ -31,12 +31,17 @@ TreeNode* AVL::rightRotation (TreeNode* node) {
     return rightr1;
 }
 
-TreeNode* AVL::insert(TreeNode* node, int key) {
-    if (!node) return new TreeNode(key);
+TreeNode* AVL::insert(TreeNode* node, int key, TreeNode*& insertedNode) {
+    if (!node) {
+        insertedNode = new TreeNode(key);
+        return insertedNode;
+    }
 
-    if (key == node->value) return node;
-    else if (key < node->value) node->left = insert(node->left, key);
-    else node->right = insert(node->right, key);
+    if (key == node->value) {
+        insertedNode = node;
+        return node;
+    } else if (key < node->value) node->left = insert(node->left, key, insertedNode);
+    else node->right = insert(node->right, key, insertedNode);
 
     node->height = 1 + max(getHeight(node->left), getHeight(node->right));
     int balance = balanceFactor(node);

@@ -24,5 +24,5 @@ struct AVL {
     int balanceFactor(TreeNode* node);
     TreeNode* leftRotation (TreeNode* node);
     TreeNode* rightRotation (TreeNode* node);
-    TreeNode* insert(TreeNode* node, int key);
+    TreeNode* insert(TreeNode* node, int key, TreeNode*& insertedNode);
 };
