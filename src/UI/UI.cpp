@@ -1,4 +1,4 @@
-#include "UI.h"
+﻿#include "UI.h"
 
 // BUTTON
 Button::Button(float x, float y, float width, float height, string text, Color color) {
@@ -101,7 +101,7 @@ void InputBox::Draw() {
 }
 
 int InputBox::GetValue() {
-    if (letterCount > 0) return std::stoi(text);
+    if (letterCount > 0) return stoi(text);
     return -1;
 }
 
@@ -141,22 +141,19 @@ void Slider::Update(Vector2 mousePos, bool mouseDown) {
         float percent = (mousePos.x - bounds.x) / bounds.width;
         if (percent < 0.0f) percent = 0.0f;
         if (percent > 1.0f) percent = 1.0f;
-
         currentValue = minValue + percent * (maxValue - minValue);
     }
 }
 
 void Slider::Draw() {
-    DrawRectangle(bounds.x, bounds.y + bounds.height / 2 - 2, bounds.width, 4, LIGHTGRAY);
+    DrawRectangle((int)bounds.x, (int)(bounds.y + bounds.height / 2 - 2), (int)bounds.width, 4, LIGHTGRAY);
 
     float percent = (currentValue - minValue) / (maxValue - minValue);
-    DrawRectangle(bounds.x, bounds.y + bounds.height / 2 - 2, bounds.width * percent, 4, DARKGRAY);
+    DrawRectangle((int)bounds.x, (int)(bounds.y + bounds.height / 2 - 2), (int)(bounds.width * percent), 4, DARKGRAY);
 
     float knobX = bounds.x + bounds.width * percent;
-    Color knobColor;
-    if (isDragging) knobColor = RED;
-    else knobColor = { 210, 80, 50, 255 }; 
-    DrawRectangle(knobX - 5, bounds.y, 10, bounds.height, knobColor);
+    Color knobColor = isDragging ? RED : Color{ 210, 80, 50, 255 };
+    DrawRectangle((int)(knobX - 5), (int)bounds.y, 10, (int)bounds.height, knobColor);
 }
 
 float Slider::GetValue() {
