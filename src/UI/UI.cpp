@@ -7,12 +7,39 @@ Button::Button(float x, float y, float width, float height, string text, Color c
     this->color = color;
 }
 
-void Button::draw() {
+void Button::draw(bool haveBorder, bool isFlat, bool leftAlign) {
     DrawRectangleRec(rect, color);
-    DrawRectangleLinesEx(rect, 2, BLACK);
 
-    int textWidth = MeasureText(text.c_str(), 25);
-    DrawText(text.c_str(), rect.x + (rect.width - textWidth) / 2, rect.y + (rect.height - 20) / 2, 25, BLACK);
+    int textX, textY, fontSize;
+    Color textColor;
+
+    if (isFlat) {
+        DrawLine((int)rect.x, (int)(rect.y + rect.height), (int)(rect.x + rect.width), (int)(rect.y + rect.height), { 255, 255, 255, 40 });
+
+        fontSize = 20;
+        textColor = RAYWHITE;
+        textY = (int)rect.y + ((int)rect.height - fontSize) / 2;
+
+        if (leftAlign) {
+            textX = (int)rect.x + 15;
+        }
+        else {
+            int textWidth = MeasureText(text.c_str(), fontSize);
+            textX = (int)rect.x + ((int)rect.width - textWidth) / 2;
+        }
+    }
+    else {
+        if (haveBorder) {
+            DrawRectangleLinesEx(rect, 2, BLACK);
+        }
+
+        fontSize = 25;
+        textColor = BLACK;
+        int textWidth = MeasureText(text.c_str(), fontSize);
+        textX = rect.x + (rect.width - textWidth) / 2;
+        textY = rect.y + (rect.height - 20) / 2;
+    }
+    DrawText(text.c_str(), textX, textY, fontSize, textColor);
 }
 
 bool Button::isPressed(Vector2 mousePos, bool mousePressed) {
@@ -87,24 +114,6 @@ void InputBox::checkPressed(Vector2 mousePos, bool mousePressed) {
     if (mousePressed) {
         if (CheckCollisionPointRec(mousePos, rect)) boxPressed = true;
         else boxPressed = false;
-    }
-}
-
-// UI HELPER
-void DrawLabel(float x, float y, string text, Color color) {
-    DrawText(text.c_str(), (int)x, (int)y, 20, color);
-}
-
-void DrawFlatButton(Rectangle rect, string text, Color bgColor, bool leftAlign) {
-    DrawRectangleRec(rect, bgColor);
-    DrawLine((int)rect.x, (int)(rect.y + rect.height), (int)(rect.x + rect.width), (int)(rect.y + rect.height), { 255, 255, 255, 40 });
-    int textY = (int)rect.y + ((int)rect.height - 20) / 2;
-    if (leftAlign) {
-        DrawText(text.c_str(), (int)rect.x + 15, textY, 20, RAYWHITE);
-    }
-    else {
-        int textWidth = MeasureText(text.c_str(), 20);
-        DrawText(text.c_str(), (int)rect.x + ((int)rect.width - textWidth) / 2, textY, 20, RAYWHITE);
     }
 }
 

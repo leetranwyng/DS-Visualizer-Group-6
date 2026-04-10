@@ -5,23 +5,22 @@
 void RenderHashTable() {
     const int screenWidth = 1200;
     const int screenHeight = 700;
-    InitWindow(screenWidth, screenHeight, "Double Hashing Hash Table Visualizer");
+    InitWindow(screenWidth, screenHeight, "Hash Table Visualizer (LP, QP, DH)");
     SetTargetFPS(60);
     srand((unsigned int)time(0));
 
     bool isMenuExpanded = true;
     int currentAction = ACTION_NONE;
 
-    string alphaText = " ";
     string searchResultText = " ";
 
-    doubleHash* myHash = new doubleHash(11);
-    myHash->insert(66, false);
-    myHash->insert(90, false);
-    myHash->insert(14, false);
-    myHash->insert(81, false);
-    myHash->insert(16, false);
-    myHash->insert(52, false);
+    int currentProbingMode = 0; // 0: LP, 1: QP, 2: DH
+    hashTableVis* myHash = new hashTableVis(30, currentProbingMode);
+
+    for (int i = 0; i < 20; i++) {
+        int randValue = rand() % 99 + 1;
+        myHash->insert(randValue, false);
+    }
 
     // UI CONFIG
     float menuWidth_Expanded = 180;
@@ -67,6 +66,52 @@ void RenderHashTable() {
         Vector2 mousePosition = GetMousePosition();
         bool mousePressed = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
 
+        string textLP = (currentProbingMode == 0) ? "LINEAR PROBING" : "LP";
+        string textQP = (currentProbingMode == 1) ? "QUADRATIC PROBING" : "QP";
+        string textDH = (currentProbingMode == 2) ? "DOUBLE HASHING" : "DH";
+
+        int widthDH = MeasureText(textDH.c_str(), 25) + 20;
+        int widthQP = MeasureText(textQP.c_str(), 25) + 20;
+        int widthLP = MeasureText(textLP.c_str(), 25) + 20;
+
+        int modeSpacing = 10;
+        int startX_DH = screenWidth - widthDH - 20;
+        int startX_QP = startX_DH - widthQP - modeSpacing;
+        int startX_LP = startX_QP - widthLP - modeSpacing;
+
+        // Visual indicator for the active mode
+        Color colorLP = (currentProbingMode == 0) ? Color{ 210, 210, 210, 255 } : Color{ 240, 240, 240, 255 };
+        Color colorQP = (currentProbingMode == 1) ? Color{ 210, 210, 210, 255 } : Color{ 240, 240, 240, 255 };
+        Color colorDH = (currentProbingMode == 2) ? Color{ 210, 210, 210, 255 } : Color{ 240, 240, 240, 255 };
+
+        Button modeBtnLP(startX_LP, 20, widthLP, 40, textLP, colorLP);
+        Button modeBtnQP(startX_QP, 20, widthQP, 40, textQP, colorQP);
+        Button modeBtnDH(startX_DH, 20, widthDH, 40, textDH, colorDH);
+
+        // Mode Switching
+        if (!myHash->isAnimating) {
+            int nextMode = currentProbingMode;
+
+            if (modeBtnLP.isPressed(mousePosition, mousePressed)) nextMode = 0;
+            else if (modeBtnQP.isPressed(mousePosition, mousePressed)) nextMode = 1;
+            else if (modeBtnDH.isPressed(mousePosition, mousePressed)) nextMode = 2;
+
+            if (nextMode != currentProbingMode) {
+                currentProbingMode = nextMode;
+                int currentTableSize = myHash->TABLE_SIZE;
+                delete myHash;
+
+                myHash = new hashTableVis(currentTableSize, currentProbingMode);
+
+                for (int i = 0; i < 20; i++) {
+                    int randValue = rand() % 99 + 1;
+                    myHash->insert(randValue, false);
+                }
+                searchResultText = " ";
+                currentAction = ACTION_NONE;
+            }
+        }
+
         // INPUT BOX
         if (isMenuExpanded) {
             switch (currentAction) {
@@ -110,14 +155,12 @@ void RenderHashTable() {
 
                 if (m > 0 && n >= 0 && n <= m) {
                     delete myHash;
-                    myHash = new doubleHash(m);
+                    myHash = new hashTableVis(m, currentProbingMode);
 
                     for (int i = 0; i < n; i++) {
                         int randValue = rand() % 99 + 1;
                         myHash->insert(randValue, false);
                     }
-                    float alpha = (float)n / (float)m;
-                    alphaText = TextFormat("random integers (α = N/M = %0.1f)", alpha);
 
                     mInput.Clear(); nInput.Clear();
                 }
@@ -162,49 +205,64 @@ void RenderHashTable() {
 
         myHash->draw(screenWidth, screenHeight);
 
-        DrawText("Double Hashing Hash Map", 60, 25, 32, DARKGRAY);
+        // Dynamic Title
+        string titleText = "Hash Map Visualizer";
+        if (currentProbingMode == 0) titleText = "Linear Probing Hash Map";
+        else if (currentProbingMode == 1) titleText = "Quadratic Probing Hash Map";
+        else if (currentProbingMode == 2) titleText = "Double Hashing Hash Map";
+
+        DrawText(titleText.c_str(), 60, 25, 32, DARKGRAY);
         DrawText("Green: Occupied | White (E): Empty (-1) | Red (D): Deleted (-2)", 60, 60, 20, GRAY);
         DrawRectangle(0, 0, 35, screenHeight, BLACK);
 
+        // Draw mode buttons (no border, NOT flat, center aligned)
+        modeBtnLP.draw(false, false, false);
+        modeBtnQP.draw(false, false, false);
+        modeBtnDH.draw(false, false, false);
+
         // MENU
         if (isMenuExpanded) {
-            DrawFlatButton(createMenuButton.rect, "Create(M, N)", menuColor, true);
-            DrawFlatButton(searchMenuButton.rect, "Search(v)", menuColor, true);
-            DrawFlatButton(insertMenuButton.rect, "Insert(v)", menuColor, true);
-            DrawFlatButton(removeMenuButton.rect, "Remove(v)", menuColor, true);
-            DrawFlatButton(collapseButton.rect, "<", toggleColor, false);
+            // Main menu items (no border, flat style, left aligned)
+            createMenuButton.draw(false, true, true);
+            searchMenuButton.draw(false, true, true);
+            insertMenuButton.draw(false, true, true);
+            removeMenuButton.draw(false, true, true);
+
+            // Collapse button (no border, flat style, center aligned)
+            collapseButton.draw(false, true, false);
         }
         else {
-            DrawFlatButton(expandButton.rect, ">", toggleColor, false);
+            // Expand button (no border, flat style, center aligned)
+            expandButton.draw(false, true, false);
         }
 
         if (isMenuExpanded) {
             int labelOffsetY = 12;
             switch (currentAction) {
             case ACTION_CREATE:
-                DrawLabel(panelX, createMenuButton.rect.y + labelOffsetY, "New HT of size M =");
+                DrawText("New HT of size M =", (int)panelX, (int)(createMenuButton.rect.y + labelOffsetY), 20, BLACK);
                 mInput.Draw();
-                DrawLabel(mInput.rect.x + mInput.rect.width + 5, createMenuButton.rect.y + labelOffsetY, "and N =");
+                DrawText("and N =", (int)(mInput.rect.x + mInput.rect.width + 5), (int)(createMenuButton.rect.y + labelOffsetY), 20, BLACK);
                 nInput.Draw();
-                DrawLabel(nInput.rect.x + nInput.rect.width + 5, createMenuButton.rect.y + labelOffsetY, "random integers");
-                DrawFlatButton(createGoButton.rect, "Go", toggleColor, false);
+                DrawText("random integers", (int)(nInput.rect.x + nInput.rect.width + 5), (int)(createMenuButton.rect.y + labelOffsetY), 20, BLACK);
+                createGoButton.draw(false, true, false); // Go buttons (no border, flat style, center aligned)
                 break;
             case ACTION_SEARCH:
-                DrawLabel(panelX, searchMenuButton.rect.y + labelOffsetY, "v =");
+                DrawText("v =", (int)panelX, (int)(searchMenuButton.rect.y + labelOffsetY), 20, BLACK);
                 searchVInput.Draw();
-                DrawFlatButton(searchGoButton.rect, "Go", toggleColor, false);
-                DrawLabel(searchGoButton.rect.x + searchGoButton.rect.width + 20, searchGoButton.rect.y + labelOffsetY, searchResultText, BLUE);
+                searchGoButton.draw(false, true, false);
+                DrawText(searchResultText.c_str(), (int)(searchGoButton.rect.x + searchGoButton.rect.width + 20), (int)(searchGoButton.rect.y + labelOffsetY), 20, BLUE);
                 break;
             case ACTION_INSERT:
-                DrawLabel(panelX, insertMenuButton.rect.y + labelOffsetY, "v =");
+                DrawText("v =", (int)panelX, (int)(insertMenuButton.rect.y + labelOffsetY), 20, BLACK);
                 insertVInput.Draw();
-                DrawFlatButton(insertGoButton.rect, "Go", toggleColor, false);
+                insertGoButton.draw(false, true, false);
                 break;
             case ACTION_REMOVE:
-                DrawLabel(panelX, removeMenuButton.rect.y + labelOffsetY, "v =");
+                DrawText("v =", (int)panelX, (int)(removeMenuButton.rect.y + labelOffsetY), 20, BLACK);
                 removeVInput.Draw();
-                DrawFlatButton(removeGoButton.rect, "Go", toggleColor, false);
-                DrawLabel(removeGoButton.rect.x + removeGoButton.rect.width + 20, removeGoButton.rect.y + labelOffsetY, searchResultText, ORANGE);
+                removeGoButton.draw(false, true, false);
+                DrawText(searchResultText.c_str(), (int)(removeGoButton.rect.x + removeGoButton.rect.width + 20), (int)(removeGoButton.rect.y + labelOffsetY), 20, ORANGE);
                 break;
             case ACTION_NONE: break;
             }

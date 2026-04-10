@@ -8,7 +8,7 @@
 
 using namespace std;
 
-class doubleHash {
+class hashTableVis {
 public:
     int TABLE_SIZE;
     int keysPresent;
@@ -19,6 +19,7 @@ public:
 
     bool isAnimating;
     int animType; // 1: Insert, 2: Search, 3: Erase
+    int probingMode; // 0: Linear, 1: Quadaratic, 3: Double hashing
     vector<int> probePath;
     int currentProbeIndex;
     int animatingValue;
@@ -26,12 +27,14 @@ public:
     float animationDelay;
     int highlightedBucket;
 
-    doubleHash(int n);
+    hashTableVis(int n, int probingMode);
 
     void __setSieve();
     int inline hash1(int value);
     int inline hash2(int value);
     bool inline isFull();
+
+    int inline getNextProbe(int value, int iteration, int& probe, int& offset);
 
     void insert(int value, bool animate = true);
     void erase(int value, bool animate = true);

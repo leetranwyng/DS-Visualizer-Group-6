@@ -9,12 +9,12 @@ using namespace std;
 class Button {
 public:
     Rectangle rect;
-    Button(float x, float y, float width, float height, string text, Color color);
-    void draw();
-    bool isPressed(Vector2 mousePos, bool mousePressed);
-private:
     string text;
     Color color;
+    Button(float x, float y, float width, float height, string text, Color color);
+    void draw(bool haveBorder = true, bool isFlat = false, bool leftAlign = false);
+
+    bool isPressed(Vector2 mousePos, bool mousePressed);
 };
 
 class InputBox {
@@ -49,6 +49,3 @@ public:
     void Draw();
     float GetValue();
 };
-
-void DrawLabel(float x, float y, string text, Color color = DARKGRAY);
-void DrawFlatButton(Rectangle rect, string text, Color bgColor, bool leftAlign = true);
