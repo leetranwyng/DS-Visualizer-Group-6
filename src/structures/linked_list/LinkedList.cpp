@@ -1,14 +1,36 @@
 #include "LinkedList.h"
 
-DoublyLinkedList::DoublyLinkedList() {
-    head = NULL;
+LinkedListNode::LinkedListNode(int value) {
+    data = value;
+    prev = nullptr;
+    next = nullptr;
 }
 
-void DoublyLinkedList::insertFront(int value) {
-    Node1* newNode = new Node1(value);
+LinkedList::LinkedList() {
+    head = nullptr;
+    tail = nullptr;
+}
 
-    if (head == NULL) {
-        head = newNode;
+LinkedList::~LinkedList() {
+    clear();
+}
+
+void LinkedList::clear() {
+    LinkedListNode* cur = head;
+    while (cur != nullptr) {
+        LinkedListNode* temp = cur;
+        cur = cur->next;
+        delete temp;
+    }
+    head = nullptr;
+    tail = nullptr;
+}
+
+void LinkedList::insertFront(int value) {
+    LinkedListNode* newNode = new LinkedListNode(value);
+
+    if (head == nullptr) {
+        head = tail = newNode;
         return;
     }
 
@@ -17,57 +39,74 @@ void DoublyLinkedList::insertFront(int value) {
     head = newNode;
 }
 
-void DoublyLinkedList::insertBack(int value) {
-    Node1* newNode = new Node1(value);
+void LinkedList::insertBack(int value) {
+    LinkedListNode* newNode = new LinkedListNode(value);
 
-    if (head == NULL) {
-        head = newNode;
+    if (tail == nullptr) {
+        head = tail = newNode;
         return;
     }
 
-    Node1* temp = head;
-
-    while (temp->next != NULL) {
-        temp = temp->next;
-    }
-
-    temp->next = newNode;
-    newNode->prev = temp;
+    tail->next = newNode;
+    newNode->prev = tail;
+    tail = newNode;
 }
 
-void DoublyLinkedList::deleteValue(int value) {
-    Node1* temp = head;
+bool LinkedList::deleteValue(int value) {
+    LinkedListNode* cur = head;
 
-    while (temp != NULL && temp->data != value) {
-        temp = temp->next;
+    while (cur != nullptr && cur->data != value) {
+        cur = cur->next;
     }
 
-    if (temp == NULL) {
-        cout << "Value not found\n";
-        return;
-    }
+    if (cur == nullptr) return false;
 
-    if (temp->prev != NULL) {
-        temp->prev->next = temp->next;
-    }
-    else {
-        head = temp->next;
-    }
+    if (cur == head) head = cur->next;
+    if (cur == tail) tail = cur->prev;
 
-    if (temp->next != NULL) {
-        temp->next->prev = temp->prev;
-    }
+    if (cur->prev != nullptr) cur->prev->next = cur->next;
+    if (cur->next != nullptr) cur->next->prev = cur->prev;
 
-    delete temp;
+    if (head != nullptr) head->prev = nullptr;
+    if (tail != nullptr) tail->next = nullptr;
+
+    delete cur;
+    return true;
 }
 
-void DoublyLinkedList::displayForward() {
-    Node1* temp = head;
-
-    while (temp != NULL) {
-        cout << temp->data << " <-> ";
-        temp = temp->next;
+LinkedListNode* LinkedList::search(int value) {
+    LinkedListNode* cur = head;
+    while (cur != nullptr) {
+        if (cur->data == value) return cur;
+        cur = cur->next;
     }
+    return nullptr;
+}
 
-    cout << "NULL\n";
+bool LinkedList::updateValue(int oldValue, int newValue) {
+    LinkedListNode* found = search(oldValue);
+    if (found == nullptr) return false;
+    found->data = newValue;
+    return true;
+}
+
+LinkedListNode* LinkedList::getHead() const {
+    return head;
+}
+
+std::vector<int> LinkedList::toVector() const {
+    std::vector<int> values;
+    LinkedListNode* cur = head;
+    while (cur != nullptr) {
+        values.push_back(cur->data);
+        cur = cur->next;
+    }
+    return values;
+}
+
+void LinkedList::loadFromVector(const std::vector<int>& values) {
+    clear();
+    for (int x : values) {
+        insertBack(x);
+    }
 }
