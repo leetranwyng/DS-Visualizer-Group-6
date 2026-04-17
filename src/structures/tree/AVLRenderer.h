@@ -3,33 +3,29 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <fstream>
+
 using namespace std;
 
 struct TreeNode;
 struct AVL;
+struct NodeShape;
+struct EdgeShape;
 
-struct NodeShape {
-    TreeNode* node;
-    Vector2 current; //current position
-    Vector2 target; //final position
-    float radius;
-    Color color;
-};
-
-struct EdgeShape {
-    TreeNode* parent;
-    TreeNode* child;
-    Vector2 start;
-    Vector2 end;
-    Color color;
-};
+const int AVL_ACTION_NONE = 0;
+const int AVL_ACTION_INSERT = 1;
+const int AVL_ACTION_INIT = 2;
+const int AVL_ACTION_VISIT = 3;
+const int AVL_ACTION_UPDATE = 4;
+const int AVL_ACTION_DELETE = 5;
 
 enum EventType {
     VISIT,
     INSERT,
     ROTATE_LEFT,
-    ROTATE_RIGHT
+    ROTATE_RIGHT,
 };
+
 struct AVLevent {
     EventType type;
     TreeNode* nodeVal; //affected node
