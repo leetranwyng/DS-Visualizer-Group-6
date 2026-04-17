@@ -16,8 +16,8 @@ TreeNode* AVL::leftRotation (TreeNode* node) {
     TreeNode* leftr2 = leftr1->left;
     leftr1->left = node;
     node->right = leftr2;
-    leftr1->height = 1 + max(getHeight(leftr1->left), getHeight(leftr1->right));
     node->height = 1 + max(getHeight(node->left), getHeight(node->right));
+    leftr1->height = 1 + max(getHeight(leftr1->left), getHeight(leftr1->right));
     return leftr1;
 }
 
@@ -26,8 +26,8 @@ TreeNode* AVL::rightRotation (TreeNode* node) {
     TreeNode* rightr2 = rightr1->right;
     rightr1->right = node;
     node->left = rightr2;
-    rightr1->height = 1 + max(getHeight(rightr1->left), getHeight(rightr1->right));
     node->height = 1 + max(getHeight(node->left), getHeight(node->right));
+    rightr1->height = 1 + max(getHeight(rightr1->left), getHeight(rightr1->right));
     return rightr1;
 }
 
@@ -65,4 +65,60 @@ TreeNode* AVL::insert(TreeNode* node, int key, TreeNode*& insertedNode) {
     }
 
     return node;
+}
+
+TreeNode* AVL::getSuccessor(TreeNode* node) {
+    TreeNode* cur = node->right;
+    while (cur->left) cur = cur->left;
+    return cur;
+}
+
+TreeNode* AVL::remove(TreeNode* node, int key) {
+    if (!node) return nullptr;
+    if (key < node->value) node->left = remove(node->left, key);
+    else if (key > node->value) node->right = remove(node->right, key);
+    else {
+        if (!node->left && !node->right) { //No kids
+            delete node;
+            return nullptr;
+        } else if (!node->left) {          //One right kid
+            TreeNode* temp = node->right;
+            delete node;
+            return temp;
+        } else if (!node->right) {         //One not-right kid
+            TreeNode* temp = node->left;
+            delete node;
+            return temp;
+        }
+        TreeNode* temp = getSuccessor(node);
+        node->value = temp->value;
+        node->right = remove(node->right, temp->value);
+    }
+
+    node->height = 1 + max(getHeight(node->left), getHeight(node->right));
+    int balance = balanceFactor(node);
+    if (balance > 1 && key < node->left->value) {
+        return rightRotation(node);
+    }
+    if (balance < -1 && key > node->right->value) {
+        return leftRotation(node);
+    }
+    if (balance < -1 && key < node->right->value) {
+        node->right = rightRotation(node->right);
+        return leftRotation(node);
+    }
+    if (balance > 1 && key > node->left->value) {
+        node->left = leftRotation(node->left);
+        return rightRotation(node);
+    }
+
+    return node;
+}
+
+TreeNode* AVL::deleteTree(TreeNode* node) {
+    if (!node) return nullptr;
+    deleteTree(node->left);
+    deleteTree(node->right);
+    delete node;
+    return nullptr;
 }
