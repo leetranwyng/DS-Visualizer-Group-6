@@ -1,19 +1,15 @@
-cmake_minimum_required(VERSION 3.15)
-project(DataStructureVisualizer CXX)
+cmake_minimum_required(VERSION 3.20)
+project(DSVisualizerGroup6)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include(FetchContent)
-FetchContent_Declare(
-    raylib
-    GIT_REPOSITORY https://github.com/raysan5/raylib.git
-    GIT_TAG 5.0 # You can change this to master for the bleeding-edge version
+add_executable(DSVisualizerGroup6
+    src/main.cpp
+    src/UI/UI.cpp
+    src/structures/linked_list/LinkedList.cpp
+    src/structures/linked_list/LinkedListRenderer.cpp
 )
-FetchContent_MakeAvailable(raylib)
 
-file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
-
-add_executable(${PROJECT_NAME} ${SOURCES})
-
-target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+find_package(raylib CONFIG REQUIRED)
+target_link_libraries(DSVisualizerGroup6 PRIVATE raylib)

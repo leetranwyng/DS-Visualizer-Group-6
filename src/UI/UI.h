@@ -1,6 +1,5 @@
 #pragma once
 #include "raylib.h"
-#include <vector>
 #include <string>
 using namespace std;
 struct TreeNode;
@@ -19,7 +18,7 @@ private:
 class InputBox {
 public:
     Rectangle rect;
-    char text[4];
+    char text[6];
     bool boxPressed;
     Color boxColor;
     Color textColor;

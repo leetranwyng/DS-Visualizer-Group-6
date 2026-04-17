@@ -9,6 +9,7 @@
 
 void Dijkstra::build_size()
 {
+    adj.clear();
     adj.resize(size);
 }
 
@@ -21,6 +22,8 @@ void Dijkstra::implement(int sNode)
 {
     vector<int> d;
     d.resize(size);
+    history.clear();
+
     for (int i=0;i<size;i++) d[i] = INT_MAX;
 
     priority_queue<edge,vector<edge>,cmp> q;
@@ -40,7 +43,8 @@ void Dijkstra::implement(int sNode)
             {
                 d[v.node] = d[u.node] + v.weight;
                 q.push({v.node, d[v.node]});
-            }
+            } 
+            history.push_back({u.node, v.node, d[v.node]});
         }
     }
 
@@ -89,7 +93,7 @@ int Tool::posToNode(Vector2 pos, vector<Node> &node, float radius)
     return -1;
 }
 
-void Tool::drawArrow(Vector2 u, Vector2 v, float radius)
+void Tool::drawArrow(Vector2 u, Vector2 v, float radius, Color color)
 {
     Vector2 direction = {v.x - u.x, v.y - u.y};
     float len = sqrt(direction.x*direction.x + direction.y*direction.y);
@@ -105,7 +109,7 @@ void Tool::drawArrow(Vector2 u, Vector2 v, float radius)
     Vector2 v1 = {touch.x - direction.x*size + per.x*size*0.5f, touch.y - direction.y*size + per.y*size*0.5f};
     Vector2 v2 = {touch.x - direction.x*size - per.x*size*0.5f, touch.y - direction.y*size - per.y*size*0.5f};
     //cout<< touch.x << ' '<<touch.y<<' '<<v1.x<<' '<<v1.y<<' '<<v2.x<< ' '<<v2.y<<endl;
-    DrawTriangle(touch,v2,v1, DARKGRAY);
+    DrawTriangle(touch,v2,v1, color);
 }
 
 void Dijkstra::randomGraph(int n)
@@ -116,13 +120,17 @@ void Dijkstra::randomGraph(int n)
     int max = min(n*3/2,n*(n-1)/2);
     int edge = tool.random(min(n,max),max);
     map<pair<int,int>, bool> used;
+
     for (int i=0;i<edge;i++)
     {
         int u = tool.random(0,n-1);
         int v = tool.random(0,n-1);
+        int cnt = 0;
         while(u==v || used[{u,v}] || used[{v,u}])
         {
             v = tool.random(0,n-1);
+            cnt++;
+            if (cnt>100) break;
         }
         int w = tool.random(1,50);
         build_edge(u,v,w);
@@ -132,6 +140,7 @@ void Dijkstra::randomGraph(int n)
 
 void UI::placeNode(Dijkstra* &logic)
 {
+    node.clear();
     node.resize(logic->size);
     vector<Vector2> pos;
 
@@ -158,7 +167,7 @@ void UI::drawNode(Dijkstra* &logic)
             Vector2 posV = node[v.node].pos;
 
             DrawLineEx(posU, posV, 2.0f, DARKGRAY);
-            tool.drawArrow(posU, posV, radius);
+            tool.drawArrow(posU, posV, radius, DARKGRAY);
             Vector2 midpoint = {(posU.x+posV.x)/2, (posU.y+posV.y)/2};
             string s = tool.convert(v.weight);
             const char* d = s.c_str();

@@ -1,28 +1,32 @@
 #pragma once
-#include <iostream>
-using namespace std;
+#include <vector>
 
-struct Node1 {
+struct LinkedListNode {
     int data;
-    Node1* prev;
-    Node1* next;
+    LinkedListNode* prev;
+    LinkedListNode* next;
 
-    Node1(int value) {
-        data = value;
-        prev = NULL;
-        next = NULL;
-    }
+    LinkedListNode(int value);
 };
 
-class DoublyLinkedList {
+class LinkedList {
 private:
-    Node1* head;
+    LinkedListNode* head;
+    LinkedListNode* tail;
 
 public:
-    DoublyLinkedList();
+    LinkedList();
+    ~LinkedList();
 
     void insertFront(int value);
     void insertBack(int value);
-    void deleteValue(int value);
-    void displayForward();
+    bool deleteValue(int value);
+    LinkedListNode* search(int value);
+    bool updateValue(int oldValue, int newValue);
+    void clear();
+
+    LinkedListNode* getHead() const;
+
+    std::vector<int> toVector() const;
+    void loadFromVector(const std::vector<int>& values);
 };
