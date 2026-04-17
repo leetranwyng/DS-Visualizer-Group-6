@@ -25,4 +25,7 @@ struct AVL {
     TreeNode* leftRotation (TreeNode* node);
     TreeNode* rightRotation (TreeNode* node);
     TreeNode* insert(TreeNode* node, int key, TreeNode*& insertedNode);
+    TreeNode* getSuccessor(TreeNode* node);
+    TreeNode* remove(TreeNode* node, int key);
+    TreeNode* deleteTree(TreeNode* node);
 };
