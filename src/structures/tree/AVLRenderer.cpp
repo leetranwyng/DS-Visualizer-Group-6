@@ -56,21 +56,35 @@ void AVLRender::assignPosition(TreeNode* node, float x, float y, float offset) {
 void AVLRender::processEvent(const AVLevent& e) {
     switch (e.type) {
         case VISIT: {
+            for (auto &n : nodes) {
+                if (n.node == e.nodeVal) n.color = GREEN;
+                else n.color = GRAY;
+            }
             NodeShape* n = findNode(e.nodeVal);
             if (n) {
-                n->color = YELLOW;
+                n->color = RED;
             }
             break;
         }
         case INSERT: {
             syncWithTree();
             NodeShape* n = findNode(e.nodeVal);
-            if (n) n->color = GRAY;
+            if (n) n->color = GREEN;
             recomputeLayout();
             break;
         }
         case ROTATE_LEFT:
         case ROTATE_RIGHT: {
+            recomputeLayout();
+            break;
+        }
+        case REMOVE: {
+            for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+                if (it->node == e.nodeVal) {
+                    nodes.erase(it);
+                    break;
+                }
+            }
             recomputeLayout();
             break;
         }
@@ -89,6 +103,9 @@ void AVLRender::animation(float dt) {
         if (step < events.size()) {
             processEvent(events[step]);
             step++;
+        } else {
+            isPlaying = false;
+            isVisualizing = false;
         }
         stepTimer = 0;
     }
@@ -147,7 +164,8 @@ void AVLRender::draw() {
 }
 
 void DrawPseudoCode(Rectangle rect, const vector<string>& lines) {
-    DrawRectangleRec(rect, Fade(WHITE, 0.95f));
+    Color TURQUOISE = {175, 238, 238, 220};
+    DrawRectangleRec(rect, Fade(TURQUOISE, 0.95f));
     DrawRectangleLinesEx(rect, 2, DARKGRAY);
     DrawText("Pseudo-code", rect.x + 10, rect.y - 25, 20, DARKGRAY);
 
@@ -180,11 +198,13 @@ void RenderAVL() {
     float buttonHeight = 45;
     float bottomBarHeight = 40;
     float startY = screenH - bottomBarHeight - (5 * buttonHeight) - 40;
-    float controlY = GetScreenHeight() - 80;
-    float controlX = GetScreenWidth() / 2.0f - 120;float panelX = menuWidth_Collapsed + menuWidth_Expanded + 15;
+    float controlY = GetScreenHeight() - 70;
+    float controlX = GetScreenWidth() / 2.0f - 70;
+    float panelX = menuWidth_Collapsed + menuWidth_Expanded + 15;
 
     Color menuColor = {210, 80, 50, 255};
     Color toggleColor = {190, 60, 40, 255};
+    Color buttonBlue = {66, 133, 244, 255};
 
     Button collapseButton(0, startY, menuWidth_Collapsed, buttonHeight, "<", toggleColor);
     Button expandButton(0, startY, menuWidth_Collapsed, buttonHeight, ">", toggleColor);
@@ -210,9 +230,10 @@ void RenderAVL() {
     Button deleteSelectBtn(panelX + 190, deleteMenuButton.rect.y, 85, buttonHeight, "Select", toggleColor);
     Button deleteGoButton(panelX + 285, deleteMenuButton.rect.y, 85, buttonHeight, "Delete", toggleColor);
 
-    Button prevBtn(controlX, controlY, 50, 40, "<", toggleColor);
-    Button playBtn(controlX + 60, controlY, 50, 40, "||", toggleColor);
-    Button nextBtn(controlX + 120, controlY, 50, 40, ">", toggleColor);
+    Button prevBtn(controlX, controlY, 50, 40, "<", buttonBlue);
+    Button playBtn(controlX + 60, controlY, 50, 40, "||", buttonBlue);
+    Button nextBtn(controlX + 120, controlY, 50, 40, ">", buttonBlue);
+    Button instant(controlX + 180, controlY, 84, 40, "Instant", buttonBlue);
 
     Slider speedSlider(50, 815, 200, 20, 0.05f, 1.5f, 0.5f);
 
@@ -303,13 +324,24 @@ void RenderAVL() {
         }
 
         //Step by step animation
-        if (playBtn.isPressed(mousePos, mousePressed)) render.isPlaying = !render.isPlaying;
+        if (instant.isPressed(mousePos, mousePressed)) {
+            render.stepMode = false; // Set to instant mode
+            render.isPlaying = false;
+            render.events.clear();
+            render.isVisualizing = false;
+        }
+
+        if (playBtn.isPressed(mousePos, mousePressed)) {
+            render.isPlaying = !render.isPlaying;
+            if (render.isPlaying) render.stepMode = true;
+        }
         if (nextBtn.isPressed(mousePos, mousePressed)) {
             render.isPlaying = false; 
             if (render.step < render.events.size()) {
                 render.processEvent(render.events[render.step]);
                 render.step++;
             }
+            if (render.step == render.events.size()) render.isVisualizing = false;
         }
         if (prevBtn.isPressed(mousePos, mousePressed)) {
             render.isPlaying = false;
@@ -350,15 +382,23 @@ void RenderAVL() {
             if (currentAction == AVL_ACTION_INSERT && insertGoButton.isPressed(mousePos, mousePressed)) { 
                 int v = insertInput.GetValue();
                 if (v != -1) {
-                    render.events.clear();
-                    render.step = 0;
-                    render.stepTimer = 0;
                     TreeNode* inserted = nullptr;
-                    tree.root = tree.insert(tree.root, v, inserted);
-                    render.syncWithTree();
-                    NodeShape* n = render.findNode(inserted);
-                    if (n) n->color = GRAY;
-                    render.recomputeLayout();
+                    if (render.stepMode) {
+                        render.isVisualizing = true;
+                        render.events.clear();
+                        render.step = 0;
+                        render.stepTimer = 0;
+                        tree.root = tree.insert(tree.root, v, inserted, [&](EventType t, TreeNode* n) {
+                            render.handleEvent(t, n);
+                        });
+                        render.isPlaying = true;
+                    } else {
+                        tree.root = tree.insert(tree.root, v, inserted);
+                        render.nodes.clear();
+                        render.syncWithTree();
+                        render.recomputeLayout();
+                        render.isVisualizing = false;
+                    }
                     insertInput.Clear();
                 }
             }
@@ -367,16 +407,27 @@ void RenderAVL() {
                 int v = findInput.GetValue();
                 if (v != -1) {
                     for (auto &node : render.nodes) node.color = GRAY;
-                    TreeNode* cur = tree.root;
-                    while (cur) {
-                        NodeShape* n = render.findNode(cur);
-                        if (n) n->color = GREEN; 
-                        if (v == cur->value) {
-                            if (n) n->color = RED;
-                            break;
+                    if (render.stepMode) {
+                        render.isVisualizing = true;
+                        render.events.clear();
+                        render.step = 0;
+                        render.stepTimer = 0;
+                        tree.find(tree.root, v, [&](EventType t, TreeNode* n) {
+                            render.handleEvent(t, n);
+                        });
+                        render.isPlaying = true;
+                    } else {
+                        TreeNode* cur = tree.root;
+                        while (cur) {
+                            NodeShape* n = render.findNode(cur);
+                            if (n) n->color = GREEN; 
+                            if (v == cur->value) {
+                                if (n) n->color = RED;
+                                break;
+                            }
+                            else if (v < cur->value) cur = cur->left;
+                            else cur = cur->right;
                         }
-                        else if (v < cur->value) cur = cur->left;
-                        else cur = cur->right;
                     }
                     findInput.Clear();
                 }
@@ -404,13 +455,23 @@ void RenderAVL() {
 
             if (currentAction == AVL_ACTION_DELETE && selectedNode != nullptr && deleteGoButton.isPressed(mousePos, mousePressed)) {
                 int val = selectedNode->value;
-                tree.root = tree.remove(tree.root, val);
-
-                render.nodes.clear();
-                render.edges.clear();
-                render.syncWithTree();
-                render.recomputeLayout();
-
+                if (render.stepMode) {
+                    render.isVisualizing = true;
+                    render.events.clear();
+                    render.step = 0;
+                    render.stepTimer = 0;
+                    tree.root = tree.remove(tree.root, val, [&](EventType t, TreeNode* n) {
+                        render.handleEvent(t, n);
+                    });
+                    render.isPlaying = true;
+                } else {
+                    tree.root = tree.remove(tree.root, val);
+                    render.nodes.clear();
+                    render.edges.clear();
+                    render.syncWithTree();
+                    render.recomputeLayout();
+                    render.isVisualizing = false;
+                }
                 selectedNode = nullptr;
             }
         }
@@ -470,9 +531,11 @@ void RenderAVL() {
         }
         speedSlider.Draw();
         DrawText("Speed:", speedSlider.bounds.x, speedSlider.bounds.y - 30, 20, DARKGRAY);
-        DrawFlatButton(prevBtn.rect, "<", toggleColor, false);
-        DrawFlatButton(playBtn.rect, render.isPlaying ? "||" : "O", toggleColor, false);
-        DrawFlatButton(nextBtn.rect, ">", toggleColor, false);
+        DrawFlatButton(prevBtn.rect, "<", buttonBlue, false);
+        DrawFlatButton(playBtn.rect, render.isPlaying ? "||" : "O", buttonBlue, false);
+        DrawFlatButton(nextBtn.rect, ">", buttonBlue, false);
+        Color instantColor = render.stepMode ? buttonBlue : GREEN;
+        DrawFlatButton(instant.rect, "Instant", instantColor, false);
         DrawPseudoCode(pseudoRect, pseudo);
         EndDrawing();
     }
