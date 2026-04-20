@@ -205,7 +205,10 @@ void UI::moveNode()
 
     if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && usedNode!=-1)
     {
-        node[usedNode].pos = mouse;
+        if (mouse.x<=800 && mouse.x>=0 && mouse.y<=600 && mouse.y>=0)
+        {
+            node[usedNode].pos = mouse;
+        }
     }
 
     if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
