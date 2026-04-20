@@ -82,6 +82,21 @@ void AVLRender::processEvent(const AVLevent& e) {
 }
 
 void AVLRender::animation(float dt) {
+    if (!isPlaying) {
+        updatePositions(dt);
+        return;
+    }
+
+    stepTimer += dt;
+
+    if (stepTimer >= stepDelay) {
+        if (step < events.size()) {
+            processEvent(events[step]);
+            step++;
+        }
+        stepTimer = 0;
+    }
+
     updatePositions(dt);
 }
 
@@ -135,11 +150,26 @@ void AVLRender::draw() {
     }
 }
 
+void DrawPseudoCode(Rectangle rect, const vector<string>& lines) {
+    DrawRectangleRec(rect, Fade(WHITE, 0.95f));
+    DrawRectangleLinesEx(rect, 2, DARKGRAY);
+    DrawText("Pseudo-code", rect.x + 10, rect.y - 25, 20, DARKGRAY);
+
+    int fontSize = 18;
+    int padding = 10;
+    for (int i = 0; i < lines.size(); i++) {
+        DrawText(lines[i].c_str(), rect.x + padding, rect.y + padding + i * (fontSize + 6), fontSize, BLACK);
+    }
+}
+
 void RenderAVL() {
     InitWindow(1360, 850, "AVL Visualizer");
-    float screenW = GetScreenWidth();
-    float screenH = GetScreenHeight();
+    float screenW = GetScreenWidth(), screenH = GetScreenHeight();
+    float pseudoWidth  = 380, pseudoHeight = 200;
     SetTargetFPS(60);
+    Rectangle pseudoRect = {GetScreenWidth() - pseudoWidth - 20, GetScreenHeight() - pseudoHeight - 20, pseudoWidth, pseudoHeight};
+    vector<string> pseudo;
+
     AVL tree;
     AVLRender render;
     render.tree = &tree;
@@ -147,13 +177,15 @@ void RenderAVL() {
     int currentAction = AVL_ACTION_NONE;
     TreeNode* selectedNode = nullptr; //For update and delete function
     bool isSelecting = false;
-
+    
     // UI
     float menuWidth_Expanded = 180;
     float menuWidth_Collapsed = 35;
     float buttonHeight = 45;
     float bottomBarHeight = 40;
     float startY = screenH - bottomBarHeight - (5 * buttonHeight) - 40;
+    float controlY = GetScreenHeight() - 80;
+    float controlX = GetScreenWidth() / 2.0f - 120;float panelX = menuWidth_Collapsed + menuWidth_Expanded + 15;
 
     Color menuColor = {210, 80, 50, 255};
     Color toggleColor = {190, 60, 40, 255};
@@ -166,10 +198,7 @@ void RenderAVL() {
     Button findMenuButton(menuWidth_Collapsed, startY + 2*buttonHeight, menuWidth_Expanded, buttonHeight, "Find (v)", menuColor);
     Button updateMenuButton(menuWidth_Collapsed, startY + 3*buttonHeight, menuWidth_Expanded, buttonHeight, "Update (v)", menuColor);
     Button deleteMenuButton(menuWidth_Collapsed, startY + 4*buttonHeight, menuWidth_Expanded, buttonHeight, "Delete (v)", menuColor);
-    float panelX = menuWidth_Collapsed + menuWidth_Expanded + 15;
-
     Button randomBtn(panelX, initMenuButton.rect.y, 100, buttonHeight, "Random", toggleColor);
-    Button fileBtn(panelX + 110, initMenuButton.rect.y, 100, buttonHeight, "File", toggleColor);
     
     InputBox insertInput(panelX + MeasureText("v = ", 20), insertMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
     Button insertGoButton(insertInput.rect.x + insertInput.rect.width + 5, insertMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
@@ -177,11 +206,17 @@ void RenderAVL() {
     InputBox findInput(panelX + MeasureText("v = ", 20), findMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
     Button findGoButton(findInput.rect.x + findInput.rect.width + 5, findMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
 
+    InputBox updateInput(panelX + MeasureText("v = ", 20), updateMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
+    InputBox valueUpdated(panelX + MeasureText("v = ", 20) + updateInput.rect.width + MeasureText("to v = ", 20) + 10, updateMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
+    Button updateGoButton(valueUpdated.rect.x + valueUpdated.rect.width + 5, updateMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
 
     Button deleteWholeTree(panelX, deleteMenuButton.rect.y, 180, buttonHeight, "Delete Tree", toggleColor);
-    float secondRowY = deleteMenuButton.rect.y + buttonHeight + 5;
-    Button deleteSelectBtn(panelX, secondRowY, 85, buttonHeight, "Select", toggleColor);
-    Button deleteGoButton(panelX + 95, secondRowY, 85, buttonHeight, "Delete", toggleColor);
+    Button deleteSelectBtn(panelX + 190, deleteMenuButton.rect.y, 85, buttonHeight, "Select", toggleColor);
+    Button deleteGoButton(panelX + 285, deleteMenuButton.rect.y, 85, buttonHeight, "Delete", toggleColor);
+
+    Button prevBtn(controlX, controlY, 50, 40, "<", toggleColor);
+    Button playBtn(controlX + 60, controlY, 50, 40, "||", toggleColor);
+    Button nextBtn(controlX + 120, controlY, 50, 40, ">", toggleColor);
 
     Slider speedSlider(50, 815, 200, 20, 0.05f, 1.5f, 0.5f);
 
@@ -207,33 +242,91 @@ void RenderAVL() {
             if (currentAction == AVL_ACTION_INSERT) {
                 insertInput.checkPressed(mousePos, mousePressed);
                 insertInput.Update();
+                pseudo = {
+                          "insert(x):",
+                          "  insert like BST",
+                          "  update height",
+                          "  check balance",
+                          "  rotate if needed"
+                };
             }
 
             if (currentAction == AVL_ACTION_VISIT) {
                 findInput.checkPressed(mousePos, mousePressed);
                 findInput.Update();
+                pseudo = {
+                    "visit(x):",
+                    "  if less than root, move left",
+                    "  if more than root, move right",
+                    "  if equal to root, visit"
+                };
+            }
+
+            if (currentAction == AVL_ACTION_UPDATE) {
+                updateInput.checkPressed(mousePos, mousePressed);
+                updateInput.Update();
+                valueUpdated.checkPressed(mousePos, mousePressed);
+                valueUpdated.Update();
+                pseudo = {
+                    "update(x → y):",
+                    "  find node x",
+                    "  remove(x)",
+                    "  insert(y)",
+                    "  rebalance"
+                };
             }
 
             if (currentAction == AVL_ACTION_DELETE && deleteSelectBtn.isPressed(mousePos, mousePressed)) {
-            isSelecting = true;
-            selectedNode = nullptr;
-            for (auto &n : render.nodes) n.color = GRAY;
-
+                isSelecting = true;
+                selectedNode = nullptr;
+                for (auto &n : render.nodes) n.color = GRAY;
+                pseudo = {
+                    "delete(x):",
+                    "  find node",
+                    "  remove node",
+                    "  replace (child/successor)",
+                    "  rebalance"
+                };
+            }
             if (currentAction == AVL_ACTION_DELETE && deleteWholeTree.isPressed(mousePos, mousePressed)) {
                 tree.root = nullptr;
                 render.nodes.clear();
                 render.edges.clear();
                 selectedNode = nullptr;
+                pseudo = {
+                    "delete whole tree:",
+                    "  delete root"
+                };
             }
         }
-        }
 
-        if (!isMenuExpanded && expandButton.isPressed(mousePos, mousePressed)) {
-            isMenuExpanded = true;
-        }
+        if (!isMenuExpanded && expandButton.isPressed(mousePos, mousePressed)) isMenuExpanded = true;
         else if (isMenuExpanded && collapseButton.isPressed(mousePos, mousePressed)) {
             isMenuExpanded = false;
             currentAction = AVL_ACTION_NONE;
+        }
+
+        //Step by step animation
+        if (playBtn.isPressed(mousePos, mousePressed)) render.isPlaying = !render.isPlaying;
+        if (nextBtn.isPressed(mousePos, mousePressed)) {
+            render.isPlaying = false; 
+            if (render.step < render.events.size()) {
+                render.processEvent(render.events[render.step]);
+                render.step++;
+            }
+        }
+        if (prevBtn.isPressed(mousePos, mousePressed)) {
+            render.isPlaying = false;
+            if (render.step > 0) {
+                render.step--;
+                render.nodes.clear();
+                render.edges.clear();
+                render.syncWithTree();
+                render.recomputeLayout();
+                for (int i = 0; i < render.step; i++) {
+                    render.processEvent(render.events[i]);
+                }
+            }
         }
 
         if (isMenuExpanded) {
@@ -281,7 +374,7 @@ void RenderAVL() {
                     TreeNode* cur = tree.root;
                     while (cur) {
                         NodeShape* n = render.findNode(cur);
-                        if (n) n->color = GRAY; 
+                        if (n) n->color = GREEN; 
                         if (v == cur->value) {
                             if (n) n->color = RED;
                             break;
@@ -293,9 +386,27 @@ void RenderAVL() {
                 }
             }
             
-            if (currentAction == AVL_ACTION_DELETE && selectedNode != nullptr &&
-                deleteGoButton.isPressed(mousePos, mousePressed)) {
+            if (currentAction == AVL_ACTION_UPDATE && updateGoButton.isPressed(mousePos, mousePressed)) {
+                int v = updateInput.GetValue();
+                int to = valueUpdated.GetValue();
+                if (v != -1 && to != -1 && v != to && tree.find(tree.root, v) && !tree.find(tree.root, to)) {
+                    for (auto &node : render.nodes) node.color = GRAY;
+                    tree.root = tree.remove(tree.root, v);
+                    TreeNode* inserted = nullptr;
+                    tree.root = tree.insert(tree.root, to, inserted);
+                    render.nodes.clear();
+                    render.edges.clear();
+                    render.syncWithTree();
+                    render.recomputeLayout();
 
+                    NodeShape* n = render.findNode(inserted);
+                    if (n) n->color = GREEN;
+                    updateInput.Clear();
+                    valueUpdated.Clear();
+                }
+            }
+
+            if (currentAction == AVL_ACTION_DELETE && selectedNode != nullptr && deleteGoButton.isPressed(mousePos, mousePressed)) {
                 int val = selectedNode->value;
                 tree.root = tree.remove(tree.root, val);
 
@@ -333,7 +444,6 @@ void RenderAVL() {
             int labelOffsetY = 12;
             if (currentAction == AVL_ACTION_INIT) {
                 DrawFlatButton(randomBtn.rect, "Random", toggleColor, false);
-                DrawFlatButton(fileBtn.rect, "File", toggleColor, false);
             }
 
             if (currentAction == AVL_ACTION_INSERT) {
@@ -348,6 +458,14 @@ void RenderAVL() {
                 DrawFlatButton(findGoButton.rect, "Go", toggleColor, false);
             }
 
+            if (currentAction == AVL_ACTION_UPDATE) {
+                DrawLabel(panelX, updateMenuButton.rect.y + labelOffsetY, "v =");
+                updateInput.Draw();
+                DrawLabel(panelX + updateInput.rect.width + 45, updateMenuButton.rect.y + labelOffsetY, "to v =");
+                valueUpdated.Draw();
+                DrawFlatButton(updateGoButton.rect, "Go", toggleColor, false);
+            }
+
             if (currentAction == AVL_ACTION_DELETE) {
                 DrawFlatButton(deleteWholeTree.rect, "Delete Tree", toggleColor, false);
                 DrawFlatButton(deleteSelectBtn.rect, "Select", toggleColor, false);
@@ -356,6 +474,10 @@ void RenderAVL() {
         }
         speedSlider.Draw();
         DrawText("Speed:", speedSlider.bounds.x, speedSlider.bounds.y - 30, 20, DARKGRAY);
+        DrawFlatButton(prevBtn.rect, "<", toggleColor, false);
+        DrawFlatButton(playBtn.rect, render.isPlaying ? "||" : "O", toggleColor, false);
+        DrawFlatButton(nextBtn.rect, ">", toggleColor, false);
+        DrawPseudoCode(pseudoRect, pseudo);
         EndDrawing();
     }
     CloseWindow();

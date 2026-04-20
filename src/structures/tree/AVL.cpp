@@ -115,6 +115,13 @@ TreeNode* AVL::remove(TreeNode* node, int key) {
     return node;
 }
 
+TreeNode* AVL::find(TreeNode* node, int key) {
+    if (!node) return nullptr;
+    if (key == node->value) return node;
+    else if (key < node->value) return find(node->left, key);
+    else return find(node->right, key);
+}
+
 TreeNode* AVL::deleteTree(TreeNode* node) {
     if (!node) return nullptr;
     deleteTree(node->left);

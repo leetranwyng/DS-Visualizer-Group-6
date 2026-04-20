@@ -38,6 +38,7 @@ struct AVLRender {
     float stepTimer;
     float stepDelay;
     bool isVisualizing;
+    bool isPlaying;
     vector<NodeShape> nodes;
     vector<EdgeShape> edges;
 
@@ -47,6 +48,7 @@ struct AVLRender {
         stepDelay = 0.5f;
         stepTimer = 0.0f;
         isVisualizing = false;
+        isPlaying = false;
     };
 
     void handleEvent(EventType type, TreeNode* node);

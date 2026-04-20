@@ -27,5 +27,6 @@ struct AVL {
     TreeNode* insert(TreeNode* node, int key, TreeNode*& insertedNode);
     TreeNode* getSuccessor(TreeNode* node);
     TreeNode* remove(TreeNode* node, int key);
+    TreeNode* find(TreeNode* node, int key);
     TreeNode* deleteTree(TreeNode* node);
 };
