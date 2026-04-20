@@ -53,6 +53,10 @@ void AVLRender::assignPosition(TreeNode* node, float x, float y, float offset) {
     assignPosition(node->right, x + offset, y + 100, offset/2);
 }
 
+void AVLRender::handleEvent(EventType type, TreeNode* node) {
+    events.push_back({type, node});
+}
+
 void AVLRender::processEvent(const AVLevent& e) {
     switch (e.type) {
         case VISIT: {
