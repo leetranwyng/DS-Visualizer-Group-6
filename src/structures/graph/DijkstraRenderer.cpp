@@ -433,9 +433,6 @@ void RenderDijkstra()
 
         }
 
-
-
-
         EndDrawing();
     }
 
