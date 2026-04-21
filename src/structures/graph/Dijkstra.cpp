@@ -1,4 +1,4 @@
-#include "dijkstra.h"
+#include "Dijkstra.h"
 #include <iostream>
 #include <raylib.h>
 #include <queue>
@@ -97,6 +97,7 @@ void Tool::drawArrow(Vector2 u, Vector2 v, float radius, Color color)
 {
     Vector2 direction = {v.x - u.x, v.y - u.y};
     float len = sqrt(direction.x*direction.x + direction.y*direction.y);
+    if (len == 0.0f) return;
     //if (len==0) cout<<u.x<<' '<<u.y<<' '<<v.x<<' '<<v.y<<'\n';
     direction.x/=len;
     direction.y/=len;

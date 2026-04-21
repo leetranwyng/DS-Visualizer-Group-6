@@ -7,21 +7,44 @@ Button::Button(float x, float y, float width, float height, string text, Color c
     this->color = color;
 }
 
-void Button::draw() {
+void Button::draw(bool haveBorder, bool isFlat, bool leftAlign) {
     DrawRectangleRec(rect, color);
-    DrawRectangleLinesEx(rect, 2, BLACK);
 
-    int fontSize = 16;
-    int textWidth = MeasureText(text.c_str(), fontSize);
+    int textX, textY, fontSize;
+    Color textColor;
 
-    int textX = (int)(rect.x + (rect.width - textWidth) / 2);
-    int textY = (int)(rect.y + (rect.height - fontSize) / 2);
+    if (isFlat) {
+        DrawLine((int)rect.x, (int)(rect.y + rect.height), (int)(rect.x + rect.width), (int)(rect.y + rect.height), { 255, 255, 255, 40 });
 
-    DrawText(text.c_str(), textX, textY, fontSize, BLACK);
+        fontSize = 20;
+        textColor = RAYWHITE;
+        textY = (int)rect.y + ((int)rect.height - fontSize) / 2;
+
+        if (leftAlign) {
+            textX = (int)rect.x + 15;
+        }
+        else {
+            int textWidth = MeasureText(text.c_str(), fontSize);
+            textX = (int)rect.x + ((int)rect.width - textWidth) / 2;
+        }
+    }
+    else {
+        if (haveBorder) {
+            DrawRectangleLinesEx(rect, 2, BLACK);
+        }
+
+        fontSize = 25;
+        textColor = BLACK;
+        int textWidth = MeasureText(text.c_str(), fontSize);
+        textX = rect.x + (rect.width - textWidth) / 2;
+        textY = rect.y + (rect.height - 20) / 2;
+    }
+    DrawText(text.c_str(), textX, textY, fontSize, textColor);
 }
 
 bool Button::isPressed(Vector2 mousePos, bool mousePressed) {
-    return CheckCollisionPointRec(mousePos, rect) && mousePressed;
+    if (CheckCollisionPointRec(mousePos, rect) && mousePressed) return true;
+    return false;
 }
 
 // INPUT TEXT BOX
@@ -31,8 +54,8 @@ InputBox::InputBox(float x, float y, float width, float height, Color bg, Color 
     letterCount = 0;
     framesCounter = 0;
     boxPressed = false;
-    boxColor = bg;
-    textColor = txt;
+    this->boxColor = bg;
+    this->textColor = txt;
 }
 
 void InputBox::Update() {
@@ -65,11 +88,8 @@ void InputBox::Update() {
 
 void InputBox::Draw() {
     DrawRectangleRec(rect, boxColor);
-
-    if (boxPressed)
-        DrawRectangleLines((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height, RED);
-    else
-        DrawRectangleLines((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height, DARKGRAY);
+    if (boxPressed) DrawRectangleLines((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height, RED);
+    else DrawRectangleLines((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height, DARKGRAY);
 
     DrawText(text, (int)rect.x + 5, (int)rect.y + 10, 21, textColor);
 
@@ -92,7 +112,8 @@ void InputBox::Clear() {
 
 void InputBox::checkPressed(Vector2 mousePos, bool mousePressed) {
     if (mousePressed) {
-        boxPressed = CheckCollisionPointRec(mousePos, rect);
+        if (CheckCollisionPointRec(mousePos, rect)) boxPressed = true;
+        else boxPressed = false;
     }
 }
 

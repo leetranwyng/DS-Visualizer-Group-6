@@ -26,10 +26,10 @@ struct TreeNode {
 
 struct AVL {
     TreeNode* root;
-    AVL () {
+    AVL() {
         root = nullptr;
     }
-    int getHeight (TreeNode* node);
+    int getHeight(TreeNode* node);
     int balanceFactor(TreeNode* node);
     TreeNode* leftRotation (TreeNode* node, std::function<void(EventType, TreeNode*)> onEvent = nullptr);
     TreeNode* rightRotation (TreeNode* node, std::function<void(EventType, TreeNode*)> onEvent = nullptr);

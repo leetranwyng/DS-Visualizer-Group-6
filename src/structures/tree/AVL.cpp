@@ -1,6 +1,6 @@
 #include "AVL.h"
 
-int AVL::getHeight (TreeNode* node) {
+int AVL::getHeight(TreeNode* node) {
     if (!node) return 0;
     return node->height;
 }

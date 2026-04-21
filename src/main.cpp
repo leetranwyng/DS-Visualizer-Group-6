@@ -18,7 +18,7 @@ int main() {
 
        float btnWidth = 350;
        float btnHeight = 60;
-       float startX = (menuWidth - btnWidth) / 2.0f; // Center horizontally
+       float startX = (menuWidth - btnWidth) / 2.0f;
        float startY = 120;
        float spacing = 80;
 

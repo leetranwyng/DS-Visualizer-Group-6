@@ -1,24 +1,27 @@
 #pragma once
+
 #include "raylib.h"
+#include <vector>
 #include <string>
+
 using namespace std;
 struct TreeNode;
 
 class Button {
 public:
     Rectangle rect;
-    Button(float x, float y, float width, float height, string text, Color color);
-    void draw();
-    bool isPressed(Vector2 mousePos, bool mousePressed);
-private:
     string text;
     Color color;
+    Button(float x, float y, float width, float height, string text, Color color);
+    void draw(bool haveBorder = true, bool isFlat = false, bool leftAlign = false);
+
+    bool isPressed(Vector2 mousePos, bool mousePressed);
 };
 
 class InputBox {
 public:
     Rectangle rect;
-    char text[6];
+    char text[4];
     bool boxPressed;
     Color boxColor;
     Color textColor;
@@ -66,3 +69,4 @@ struct EdgeShape {
     Vector2 end;
     Color color;
 };
+
