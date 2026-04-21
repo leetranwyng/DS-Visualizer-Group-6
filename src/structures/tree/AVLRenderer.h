@@ -3,18 +3,22 @@
 #include <vector>
 #include <string>
 #include <functional>
-#include "../../UI/UI.h"
+#include <fstream>
+
 using namespace std;
 
 struct TreeNode;
 struct AVL;
+struct NodeShape;
+struct EdgeShape;
 
-enum EventType {
-    VISIT,
-    INSERT,
-    ROTATE_LEFT,
-    ROTATE_RIGHT
-};
+const int AVL_ACTION_NONE = 0;
+const int AVL_ACTION_INSERT = 1;
+const int AVL_ACTION_INIT = 2;
+const int AVL_ACTION_VISIT = 3;
+const int AVL_ACTION_UPDATE = 4;
+const int AVL_ACTION_DELETE = 5;
+
 struct AVLevent {
     EventType type;
     TreeNode* nodeVal; //affected node
@@ -27,6 +31,8 @@ struct AVLRender {
     float stepTimer;
     float stepDelay;
     bool isVisualizing;
+    bool isPlaying;
+    bool stepMode;
     vector<NodeShape> nodes;
     vector<EdgeShape> edges;
 
@@ -36,6 +42,8 @@ struct AVLRender {
         stepDelay = 0.5f;
         stepTimer = 0.0f;
         isVisualizing = false;
+        isPlaying = false;
+        stepMode = false;
     };
 
     void handleEvent(EventType type, TreeNode* node);
