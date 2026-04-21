@@ -56,7 +56,7 @@ void RenderHashTable() {
     InputBox removeVInput(panelX + MeasureText("v = ", 20), removeMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
     Button removeGoButton(removeVInput.rect.x + removeVInput.rect.width + 5, removeMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
 
-    Button loadGoButton(panelX + MeasureText("Read 'input.txt' ", 20), loadMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
+    Button loadGoButton(panelX + MeasureText("Read 'File_Input.txt' ", 20), loadMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
     string loadStatusText = "";
 
     Slider speedSlider(40, screenHeight - 40, 200, 20, 1.5f, 0.05f, 0.5f);
