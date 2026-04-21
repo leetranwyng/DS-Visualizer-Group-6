@@ -253,9 +253,11 @@ void RenderDijkstra()
     Button* next_button = new Button(1000, 250, 200, 50, "Next Step", LIGHTGRAY);
     Tool* tool = new Tool;
 
-    int sourceNode = -1, old_sourceNode = -1;
-    int isNextStep = 0;
-    vector<state> currentHistory;
+    Button* back_button = new Button(1000, 350, 200, 50, "Back Step", LIGHTGRAY);
+
+    Button* play_button = new Button(1000, 450, 200, 50, "Play", LIGHTGRAY);
+
+    Slider* speed_slider = new Slider(1000, 550, 200, 20, 0.1f, 2.0f, 1.0f);
 
     Button* initialize_button = new Button(1000, 600, 200, 50, "Initialize", LIGHTGRAY);
     
@@ -280,7 +282,13 @@ void RenderDijkstra()
 
         Visual->moveNode();
         Visual->drawNode(Graph);
+
+        speed_slider->Draw();
+        speed_slider->Update(GetMousePosition(), IsMouseButtonDown(MOUSE_LEFT_BUTTON));
         
+        speedSlider = speed_slider->GetValue();
+        speedSlider = scaleSpeed(speedSlider);
+        //cout<<speedSlider<<endl;
         
         random_button->draw();
         random_step(random_button, Graph, Visual, tool);
@@ -291,19 +299,8 @@ void RenderDijkstra()
         next_button->draw();
         if (!isPlaying) next_step(next_button, Graph, Visual, tool, speedSlider);
 
-               
-            }
-
-            if (GetTime()-interval > 2.5)
-            {
-                Visual->node[s.updatedNode].d = s.newDis;
-            }
-
-            if (GetTime()-interval > 3.0)
-            {
-                isNextStep--;
-                interval = GetTime();
-            }
+        back_button->draw();
+        back_step(back_button, Graph, Visual, tool);
 
         play_button->draw();
         if (!isNextStep && isSourceNode(sourceNode, Graph) && !isPopUp && !isPlaying && play_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
@@ -312,6 +309,9 @@ void RenderDijkstra()
             currentTime = 0;
         }
 
+        if (isPlaying)
+        {
+            next_step(next_button, Graph, Visual, tool, speedSlider);
         }
 
         initialize_button->draw();
@@ -432,10 +432,6 @@ void RenderDijkstra()
         
 
 
-
-
-
-        
         EndDrawing();
     }
     
