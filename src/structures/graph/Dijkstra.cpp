@@ -184,11 +184,11 @@ void UI::drawNode(Dijkstra* &logic)
 
         string s = tool.convert(i);
         const char* c1 = s.c_str();
-        DrawText(c1, pos.x-7, pos.y-14, 30, BLACK);
+        DrawText(c1, pos.x-MeasureText(c1, 30)/2, pos.y-30/2, 30, BLACK);
 
         s = tool.convert(node[i].d);
         const char* c2 = s.c_str();
-        DrawText(c2, pos.x-radius+10, pos.y-radius-18, 20, BLACK);
+        DrawText(c2, pos.x-MeasureText(c2, 20)/2, pos.y-radius-18, 20, BLACK);
 
     }
 
@@ -205,7 +205,7 @@ void UI::moveNode()
 
     if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && usedNode!=-1)
     {
-        if (mouse.x<=800 && mouse.x>=0 && mouse.y<=600 && mouse.y>=0)
+        if (mouse.x<=800 && mouse.x>=30 && mouse.y<=600 && mouse.y>=30)
         {
             node[usedNode].pos = mouse;
         }
