@@ -219,6 +219,7 @@ void RenderAVL() {
     Button updateMenuButton(menuWidth_Collapsed, startY + 3*buttonHeight, menuWidth_Expanded, buttonHeight, "Update (v)", menuColor);
     Button deleteMenuButton(menuWidth_Collapsed, startY + 4*buttonHeight, menuWidth_Expanded, buttonHeight, "Delete (v)", menuColor);
     Button randomBtn(panelX, initMenuButton.rect.y, 100, buttonHeight, "Random", toggleColor);
+    Button fileBtn(panelX + 110, initMenuButton.rect.y, 100, buttonHeight, "File", toggleColor);
     
     InputBox insertInput(panelX + MeasureText("v = ", 20), insertMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
     Button insertGoButton(insertInput.rect.x + insertInput.rect.width + 5, insertMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
@@ -383,6 +384,29 @@ void RenderAVL() {
                 render.recomputeLayout();
             }
 
+            if (currentAction == AVL_ACTION_INIT && fileBtn.isPressed(mousePos, mousePressed)) {
+                ifstream fin("../resources/File_Input.txt");
+                if (fin.is_open()) {
+                    tree.root = tree.deleteTree(tree.root);
+                    render.nodes.clear();
+                    render.edges.clear();
+                    render.isVisualizing = false;
+                    render.isPlaying = false;
+                    render.events.clear();
+                    render.step = 0;
+                    render.stepTimer = 0;
+                    int val;
+                    while (fin >> val) {
+                        if (tree.find(tree.root, val)) continue;
+                        TreeNode* inserted = nullptr;
+                        tree.root = tree.insert(tree.root, val, inserted);
+                    }
+                    render.syncWithTree();
+                    render.recomputeLayout();
+                    fin.close();
+                }
+            }
+
             if (currentAction == AVL_ACTION_INSERT && insertGoButton.isPressed(mousePos, mousePressed)) { 
                 int v = insertInput.GetValue();
                 if (v != -1) {
@@ -442,16 +466,31 @@ void RenderAVL() {
                 int to = valueUpdated.GetValue();
                 if (v != -1 && to != -1 && v != to && tree.find(tree.root, v) && !tree.find(tree.root, to)) {
                     for (auto &node : render.nodes) node.color = GRAY;
-                    tree.root = tree.remove(tree.root, v);
-                    TreeNode* inserted = nullptr;
-                    tree.root = tree.insert(tree.root, to, inserted);
-                    render.nodes.clear();
-                    render.edges.clear();
-                    render.syncWithTree();
-                    render.recomputeLayout();
-
-                    NodeShape* n = render.findNode(inserted);
-                    if (n) n->color = GREEN;
+                    if (render.stepMode) {
+                        render.isVisualizing = true;
+                        render.events.clear();
+                        render.step = 0;
+                        render.stepTimer = 0;
+                        tree.root = tree.remove(tree.root, v, [&](EventType t, TreeNode* n) {
+                            render.handleEvent(t, n);
+                        });
+                        TreeNode* inserted = nullptr;
+                        tree.root = tree.insert(tree.root, to, inserted, [&](EventType t, TreeNode* n) {
+                            render.handleEvent(t, n);
+                        });
+                        render.isPlaying = true;
+                    } else {
+                        tree.root = tree.remove(tree.root, v);
+                        TreeNode* inserted = nullptr;
+                        tree.root = tree.insert(tree.root, to, inserted);
+                        render.nodes.clear();
+                        render.edges.clear();
+                        render.syncWithTree();
+                        render.recomputeLayout();
+                        NodeShape* n = render.findNode(inserted);
+                        if (n) n->color = GREEN;
+                        render.isVisualizing = false;
+                    }
                     updateInput.Clear();
                     valueUpdated.Clear();
                 }
@@ -505,6 +544,7 @@ void RenderAVL() {
             int labelOffsetY = 12;
             if (currentAction == AVL_ACTION_INIT) {
                 DrawFlatButton(randomBtn.rect, "Random", toggleColor, false);
+                DrawFlatButton(fileBtn.rect, "File", toggleColor, false);
             }
 
             if (currentAction == AVL_ACTION_INSERT) {
