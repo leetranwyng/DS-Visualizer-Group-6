@@ -51,6 +51,9 @@ public:
     float GetValue();
 };
 
+void DrawLabel(float x, float y, string text, Color color = DARKGRAY);
+void DrawFlatButton(Rectangle rect, string text, Color bgColor, bool leftAlign = true);
+
 struct NodeShape {
     TreeNode* node;
     Vector2 current; //current position

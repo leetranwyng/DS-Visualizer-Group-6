@@ -117,6 +117,25 @@ void InputBox::checkPressed(Vector2 mousePos, bool mousePressed) {
     }
 }
 
+// UI HELPER
+void DrawLabel(float x, float y, string text, Color color) {
+    DrawText(text.c_str(), (int)x, (int)y, 20, color);
+}
+
+void DrawFlatButton(Rectangle rect, string text, Color bgColor, bool leftAlign) {
+    DrawRectangleRec(rect, bgColor);
+    DrawLine((int)rect.x, (int)(rect.y + rect.height), (int)(rect.x + rect.width), (int)(rect.y + rect.height), Color{ 255, 255, 255, 40 });
+
+    int textY = (int)rect.y + ((int)rect.height - 20) / 2;
+    if (leftAlign) {
+        DrawText(text.c_str(), (int)rect.x + 15, textY, 20, RAYWHITE);
+    }
+    else {
+        int textWidth = MeasureText(text.c_str(), 20);
+        DrawText(text.c_str(), (int)(rect.x + (rect.width - textWidth) / 2), textY, 20, RAYWHITE);
+    }
+}
+
 // SLIDER
 Slider::Slider(float x, float y, float width, float height, float minVal, float maxVal, float initialVal) {
     bounds = { x, y, width, height };
