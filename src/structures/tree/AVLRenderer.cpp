@@ -11,7 +11,7 @@ void AVLRender::recomputeLayout() {
 }
 
 NodeShape* AVLRender::findNode(TreeNode* node) {
-    for (auto &n : nodes) {
+    for (auto& n : nodes) {
         if (n.node == node) return &n;
     }
     return nullptr;
@@ -19,7 +19,7 @@ NodeShape* AVLRender::findNode(TreeNode* node) {
 
 void AVLRender::updatePositions(float dt) {
     float speed = 2.0f + 8.0f * stepDelay;
-    for (auto &n : nodes) {
+    for (auto& n : nodes) {
         n.current.x += (n.target.x - n.current.x) * speed * dt;
         n.current.y += (n.target.y - n.current.y) * speed * dt;
     }
@@ -33,65 +33,65 @@ void AVLRender::syncWithTree() {
             NodeShape n;
             n.node = node;
             float centerX = GetScreenWidth() / 2.0f; //center node
-            n.current = {centerX, 50};
-            n.target  = {centerX, 50};
+            n.current = { centerX, 50 };
+            n.target = { centerX, 50 };
             n.radius = 30;
             n.color = GRAY;
             nodes.push_back(n);
         }
         dfs(node->left);
         dfs(node->right);
-    };
+        };
     dfs(tree->root);
 }
 
 void AVLRender::assignPosition(TreeNode* node, float x, float y, float offset) {
     if (!node) return;
     NodeShape* n = findNode(node);
-    if (n) n->target = {x, y};
-    assignPosition(node->left, x - offset, y + 100, offset/2);
-    assignPosition(node->right, x + offset, y + 100, offset/2);
+    if (n) n->target = { x, y };
+    assignPosition(node->left, x - offset, y + 100, offset / 2);
+    assignPosition(node->right, x + offset, y + 100, offset / 2);
 }
 
 void AVLRender::handleEvent(EventType type, TreeNode* node) {
-    events.push_back({type, node});
+    events.push_back({ type, node });
 }
 
 void AVLRender::processEvent(const AVLevent& e) {
     switch (e.type) {
-        case VISIT: {
-            for (auto &n : nodes) {
-                if (n.node == e.nodeVal) n.color = GREEN;
-                else n.color = GRAY;
+    case VISIT: {
+        for (auto& n : nodes) {
+            if (n.node == e.nodeVal) n.color = GREEN;
+            else n.color = GRAY;
+        }
+        NodeShape* n = findNode(e.nodeVal);
+        if (n) {
+            n->color = RED;
+        }
+        break;
+    }
+    case INSERT: {
+        syncWithTree();
+        NodeShape* n = findNode(e.nodeVal);
+        if (n) n->color = GREEN;
+        recomputeLayout();
+        break;
+    }
+    case ROTATE_LEFT:
+    case ROTATE_RIGHT: {
+        recomputeLayout();
+        break;
+    }
+    case REMOVE: {
+        for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+            if (it->node == e.nodeVal) {
+                nodes.erase(it);
+                break;
             }
-            NodeShape* n = findNode(e.nodeVal);
-            if (n) {
-                n->color = RED;
-            }
-            break;
         }
-        case INSERT: {
-            syncWithTree();
-            NodeShape* n = findNode(e.nodeVal);
-            if (n) n->color = GREEN;
-            recomputeLayout();
-            break;
-        }
-        case ROTATE_LEFT:
-        case ROTATE_RIGHT: {
-            recomputeLayout();
-            break;
-        }
-        case REMOVE: {
-            for (auto it = nodes.begin(); it != nodes.end(); ++it) {
-                if (it->node == e.nodeVal) {
-                    nodes.erase(it);
-                    break;
-                }
-            }
-            recomputeLayout();
-            break;
-        }
+        recomputeLayout();
+        break;
+    }
     }
 }
 
@@ -107,7 +107,8 @@ void AVLRender::animation(float dt) {
         if (step < events.size()) {
             processEvent(events[step]);
             step++;
-        } else {
+        }
+        else {
             isPlaying = false;
             isVisualizing = false;
         }
@@ -154,10 +155,10 @@ void AVLRender::draw() {
     if (tree && tree->root) {
         buildEdges(tree->root);
     }
-    for (auto &e : edges) { //draw lines
+    for (auto& e : edges) { //draw lines
         DrawLineV(e.start, e.end, e.color);
     }
-    for (auto &n : nodes) { //draw nodes
+    for (auto& n : nodes) { //draw nodes
         DrawCircleV(n.current, n.radius, n.color);
         string text = to_string(n.node->value);
         int fontSize = 20;
@@ -168,7 +169,7 @@ void AVLRender::draw() {
 }
 
 void DrawPseudoCode(Rectangle rect, const vector<string>& lines) {
-    Color TURQUOISE = {175, 238, 238, 220};
+    Color TURQUOISE = { 175, 238, 238, 220 };
     DrawRectangleRec(rect, Fade(TURQUOISE, 0.95f));
     DrawRectangleLinesEx(rect, 2, DARKGRAY);
     DrawText("Pseudo-code", rect.x + 10, rect.y - 25, 20, DARKGRAY);
@@ -183,9 +184,9 @@ void DrawPseudoCode(Rectangle rect, const vector<string>& lines) {
 void RenderAVL() {
     InitWindow(1360, 850, "AVL Visualizer");
     float screenW = GetScreenWidth(), screenH = GetScreenHeight();
-    float pseudoWidth  = 380, pseudoHeight = 200;
+    float pseudoWidth = 380, pseudoHeight = 200;
     SetTargetFPS(60);
-    Rectangle pseudoRect = {GetScreenWidth() - pseudoWidth - 20, GetScreenHeight() - pseudoHeight - 20, pseudoWidth, pseudoHeight};
+    Rectangle pseudoRect = { GetScreenWidth() - pseudoWidth - 20, GetScreenHeight() - pseudoHeight - 20, pseudoWidth, pseudoHeight };
     vector<string> pseudo;
 
     AVL tree;
@@ -195,7 +196,7 @@ void RenderAVL() {
     int currentAction = AVL_ACTION_NONE;
     TreeNode* selectedNode = nullptr; //For update and delete function
     bool isSelecting = false;
-    
+
     // UI
     float menuWidth_Expanded = 180;
     float menuWidth_Collapsed = 35;
@@ -206,21 +207,21 @@ void RenderAVL() {
     float controlX = GetScreenWidth() / 2.0f - 70;
     float panelX = menuWidth_Collapsed + menuWidth_Expanded + 15;
 
-    Color menuColor = {210, 80, 50, 255};
-    Color toggleColor = {190, 60, 40, 255};
-    Color buttonBlue = {66, 133, 244, 255};
+    Color menuColor = { 210, 80, 50, 255 };
+    Color toggleColor = { 190, 60, 40, 255 };
+    Color buttonBlue = { 66, 133, 244, 255 };
 
     Button collapseButton(0, startY, menuWidth_Collapsed, buttonHeight, "<", toggleColor);
     Button expandButton(0, startY, menuWidth_Collapsed, buttonHeight, ">", toggleColor);
 
     Button initMenuButton(menuWidth_Collapsed, startY, menuWidth_Expanded, buttonHeight, "Init", menuColor);
     Button insertMenuButton(menuWidth_Collapsed, startY + buttonHeight, menuWidth_Expanded, buttonHeight, "Insert (v)", menuColor);
-    Button findMenuButton(menuWidth_Collapsed, startY + 2*buttonHeight, menuWidth_Expanded, buttonHeight, "Find (v)", menuColor);
-    Button updateMenuButton(menuWidth_Collapsed, startY + 3*buttonHeight, menuWidth_Expanded, buttonHeight, "Update (v)", menuColor);
-    Button deleteMenuButton(menuWidth_Collapsed, startY + 4*buttonHeight, menuWidth_Expanded, buttonHeight, "Delete (v)", menuColor);
+    Button findMenuButton(menuWidth_Collapsed, startY + 2 * buttonHeight, menuWidth_Expanded, buttonHeight, "Find (v)", menuColor);
+    Button updateMenuButton(menuWidth_Collapsed, startY + 3 * buttonHeight, menuWidth_Expanded, buttonHeight, "Update (v)", menuColor);
+    Button deleteMenuButton(menuWidth_Collapsed, startY + 4 * buttonHeight, menuWidth_Expanded, buttonHeight, "Delete (v)", menuColor);
     Button randomBtn(panelX, initMenuButton.rect.y, 100, buttonHeight, "Random", toggleColor);
     Button fileBtn(panelX + 110, initMenuButton.rect.y, 100, buttonHeight, "File", toggleColor);
-    
+
     InputBox insertInput(panelX + MeasureText("v = ", 20), insertMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
     Button insertGoButton(insertInput.rect.x + insertInput.rect.width + 5, insertMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
 
@@ -247,13 +248,13 @@ void RenderAVL() {
         bool mousePressed = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
         bool mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
         if (isSelecting && mousePressed) {
-            for (auto &n : render.nodes) {
+            for (auto& n : render.nodes) {
                 float dx = mousePos.x - n.current.x;
                 float dy = mousePos.y - n.current.y;
 
-                if (dx*dx + dy*dy <= n.radius * n.radius) {
+                if (dx * dx + dy * dy <= n.radius * n.radius) {
                     selectedNode = n.node;
-                    n.color = GREEN; 
+                    n.color = GREEN;
                     isSelecting = false;
                     break;
                 }
@@ -301,7 +302,7 @@ void RenderAVL() {
             if (currentAction == AVL_ACTION_DELETE && deleteSelectBtn.isPressed(mousePos, mousePressed)) {
                 isSelecting = true;
                 selectedNode = nullptr;
-                for (auto &n : render.nodes) n.color = GRAY;
+                for (auto& n : render.nodes) n.color = GRAY;
                 pseudo = {
                     "delete(x):",
                     "  find node",
@@ -341,7 +342,7 @@ void RenderAVL() {
             if (render.isPlaying) render.stepMode = true;
         }
         if (nextBtn.isPressed(mousePos, mousePressed)) {
-            render.isPlaying = false; 
+            render.isPlaying = false;
             if (render.step < render.events.size()) {
                 render.processEvent(render.events[render.step]);
                 render.step++;
@@ -407,7 +408,7 @@ void RenderAVL() {
                 }
             }
 
-            if (currentAction == AVL_ACTION_INSERT && insertGoButton.isPressed(mousePos, mousePressed)) { 
+            if (currentAction == AVL_ACTION_INSERT && insertGoButton.isPressed(mousePos, mousePressed)) {
                 int v = insertInput.GetValue();
                 if (v != -1) {
                     TreeNode* inserted = nullptr;
@@ -418,9 +419,10 @@ void RenderAVL() {
                         render.stepTimer = 0;
                         tree.root = tree.insert(tree.root, v, inserted, [&](EventType t, TreeNode* n) {
                             render.handleEvent(t, n);
-                        });
+                            });
                         render.isPlaying = true;
-                    } else {
+                    }
+                    else {
                         tree.root = tree.insert(tree.root, v, inserted);
                         render.nodes.clear();
                         render.syncWithTree();
@@ -434,7 +436,7 @@ void RenderAVL() {
             if (currentAction == AVL_ACTION_VISIT && findGoButton.isPressed(mousePos, mousePressed)) {
                 int v = findInput.GetValue();
                 if (v != -1) {
-                    for (auto &node : render.nodes) node.color = GRAY;
+                    for (auto& node : render.nodes) node.color = GRAY;
                     if (render.stepMode) {
                         render.isVisualizing = true;
                         render.events.clear();
@@ -442,13 +444,14 @@ void RenderAVL() {
                         render.stepTimer = 0;
                         tree.find(tree.root, v, [&](EventType t, TreeNode* n) {
                             render.handleEvent(t, n);
-                        });
+                            });
                         render.isPlaying = true;
-                    } else {
+                    }
+                    else {
                         TreeNode* cur = tree.root;
                         while (cur) {
                             NodeShape* n = render.findNode(cur);
-                            if (n) n->color = GREEN; 
+                            if (n) n->color = GREEN;
                             if (v == cur->value) {
                                 if (n) n->color = RED;
                                 break;
@@ -460,12 +463,12 @@ void RenderAVL() {
                     findInput.Clear();
                 }
             }
-            
+
             if (currentAction == AVL_ACTION_UPDATE && updateGoButton.isPressed(mousePos, mousePressed)) {
                 int v = updateInput.GetValue();
                 int to = valueUpdated.GetValue();
                 if (v != -1 && to != -1 && v != to && tree.find(tree.root, v) && !tree.find(tree.root, to)) {
-                    for (auto &node : render.nodes) node.color = GRAY;
+                    for (auto& node : render.nodes) node.color = GRAY;
                     if (render.stepMode) {
                         render.isVisualizing = true;
                         render.events.clear();
@@ -473,13 +476,14 @@ void RenderAVL() {
                         render.stepTimer = 0;
                         tree.root = tree.remove(tree.root, v, [&](EventType t, TreeNode* n) {
                             render.handleEvent(t, n);
-                        });
+                            });
                         TreeNode* inserted = nullptr;
                         tree.root = tree.insert(tree.root, to, inserted, [&](EventType t, TreeNode* n) {
                             render.handleEvent(t, n);
-                        });
+                            });
                         render.isPlaying = true;
-                    } else {
+                    }
+                    else {
                         tree.root = tree.remove(tree.root, v);
                         TreeNode* inserted = nullptr;
                         tree.root = tree.insert(tree.root, to, inserted);
@@ -505,9 +509,10 @@ void RenderAVL() {
                     render.stepTimer = 0;
                     tree.root = tree.remove(tree.root, val, [&](EventType t, TreeNode* n) {
                         render.handleEvent(t, n);
-                    });
+                        });
                     render.isPlaying = true;
-                } else {
+                }
+                else {
                     tree.root = tree.remove(tree.root, val);
                     render.nodes.clear();
                     render.edges.clear();

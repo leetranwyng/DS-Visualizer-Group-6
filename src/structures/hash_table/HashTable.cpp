@@ -1,4 +1,5 @@
 #include "HashTable.h"
+#include <cmath>
 
 void hashTableVis::__setSieve() {
     isPrime[0] = isPrime[1] = 1;
