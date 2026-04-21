@@ -1,7 +1,11 @@
 #pragma once
+
 #include "raylib.h"
+#include <vector>
 #include <string>
+
 using namespace std;
+struct TreeNode;
 
 class Button {
 public:
@@ -17,7 +21,7 @@ public:
 class InputBox {
 public:
     Rectangle rect;
-    char text[6];
+    char text[4];
     bool boxPressed;
     Color boxColor;
     Color textColor;
@@ -46,3 +50,20 @@ public:
     void Draw();
     float GetValue();
 };
+
+struct NodeShape {
+    TreeNode* node;
+    Vector2 current; //current position
+    Vector2 target; //final position
+    float radius;
+    Color color;
+};
+
+struct EdgeShape {
+    TreeNode* parent;
+    TreeNode* child;
+    Vector2 start;
+    Vector2 end;
+    Color color;
+};
+

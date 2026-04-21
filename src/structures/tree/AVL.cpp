@@ -1,6 +1,6 @@
 #include "AVL.h"
 
-int AVL::getHeight (TreeNode* node) {
+int AVL::getHeight(TreeNode* node) {
     if (!node) return 0;
     return node->height;
 }
@@ -11,7 +11,7 @@ int AVL::balanceFactor(TreeNode* node) {
     return heightDifference;
 }
 
-TreeNode* AVL::leftRotation (TreeNode* node) {
+TreeNode* AVL::leftRotation(TreeNode* node) {
     TreeNode* leftr1 = node->right;
     TreeNode* leftr2 = leftr1->left;
     leftr1->left = node;
@@ -21,7 +21,7 @@ TreeNode* AVL::leftRotation (TreeNode* node) {
     return leftr1;
 }
 
-TreeNode* AVL::rightRotation (TreeNode* node) {
+TreeNode* AVL::rightRotation(TreeNode* node) {
     TreeNode* rightr1 = node->left;
     TreeNode* rightr2 = rightr1->right;
     rightr1->right = node;
@@ -31,12 +31,18 @@ TreeNode* AVL::rightRotation (TreeNode* node) {
     return rightr1;
 }
 
-TreeNode* AVL::insert(TreeNode* node, int key) {
-    if (!node) return new TreeNode(key);
+TreeNode* AVL::insert(TreeNode* node, int key, TreeNode*& insertedNode) {
+    if (!node) {
+        insertedNode = new TreeNode(key);
+        return insertedNode;
+    }
 
-    if (key == node->value) return node;
-    else if (key < node->value) node->left = insert(node->left, key);
-    else node->right = insert(node->right, key);
+    if (key == node->value) {
+        insertedNode = node;
+        return node;
+    }
+    else if (key < node->value) node->left = insert(node->left, key, insertedNode);
+    else node->right = insert(node->right, key, insertedNode);
 
     node->height = 1 + max(getHeight(node->left), getHeight(node->right));
     int balance = balanceFactor(node);

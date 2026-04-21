@@ -17,12 +17,12 @@ struct TreeNode {
 
 struct AVL {
     TreeNode* root;
-    AVL () {
+    AVL() {
         root = nullptr;
     }
-    int getHeight (TreeNode* node);
+    int getHeight(TreeNode* node);
     int balanceFactor(TreeNode* node);
-    TreeNode* leftRotation (TreeNode* node);
-    TreeNode* rightRotation (TreeNode* node);
-    TreeNode* insert(TreeNode* node, int key);
+    TreeNode* leftRotation(TreeNode* node);
+    TreeNode* rightRotation(TreeNode* node);
+    TreeNode* insert(TreeNode* node, int key, TreeNode*& insertedNode);
 };

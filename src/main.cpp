@@ -21,11 +21,6 @@ int main() {
        float startX = (menuWidth - btnWidth) / 2.0f;
        float startY = 120;
        float spacing = 80;
-        float btnWidth = 350;
-        float btnHeight = 60;
-        float startX = (menuWidth - btnWidth) / 2.0f;
-        float startY = 120;
-        float spacing = 80;
 
        Button btnHash(startX, startY, btnWidth, btnHeight, "1. Hash Table", LIGHTGRAY);
        Button btnDijkstra(startX, startY + spacing, btnWidth, btnHeight, "2. Dijkstra's Algorithm", LIGHTGRAY);

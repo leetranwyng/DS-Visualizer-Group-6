@@ -1,25 +1,13 @@
 #pragma once
 #include "raylib.h"
-#include "AVL.h"
 #include <vector>
 #include <string>
+#include <functional>
+#include "../../UI/UI.h"
 using namespace std;
 
-struct NodeShape {
-    TreeNode* node;
-    Vector2 current; //current position
-    Vector2 target; //final position
-    float radius;
-    Color color;
-};
-
-struct EdgeShape {
-    TreeNode* parent;
-    TreeNode* child;
-    Vector2 start;
-    Vector2 end;
-    Color color;
-};
+struct TreeNode;
+struct AVL;
 
 enum EventType {
     VISIT,
@@ -37,20 +25,28 @@ struct AVLRender {
     vector<AVLevent> events;
     int step;
     float stepTimer;
+    float stepDelay;
     bool isVisualizing;
-
     vector<NodeShape> nodes;
     vector<EdgeShape> edges;
 
     AVLRender() {
         tree = nullptr;
-        isVisualizing = false;
         step = 0;
+        stepDelay = 0.5f;
         stepTimer = 0.0f;
-    }
+        isVisualizing = false;
+    };
 
-    void handleEvent(EventType type, TreeNode* key);
-    void animation(float time);
+    void handleEvent(EventType type, TreeNode* node);
+    void processEvent(const AVLevent& e);
+    void animation(float dt);
+    void updatePositions(float dt);
+    void syncWithTree();
+    void assignPosition(TreeNode* node, float x, float y, float offset);
+    void recomputeLayout();
+    void buildEdges(TreeNode* node);
+    NodeShape* findNode(TreeNode* node);
     void draw();
 };
 
