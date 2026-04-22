@@ -33,7 +33,7 @@ void Button::draw(bool haveBorder, bool isFlat, bool leftAlign) {
             DrawRectangleLinesEx(rect, 2, BLACK);
         }
 
-        fontSize = 25;
+        fontSize = 20;
         textColor = BLACK;
         int textWidth = MeasureText(text.c_str(), fontSize);
         textX = rect.x + (rect.width - textWidth) / 2;
@@ -95,7 +95,7 @@ void InputBox::Draw() {
 
     if (boxPressed && letterCount < 5) {
         if (((framesCounter / 20) % 2) == 0) {
-            DrawText("_", (int)rect.x + 8 + MeasureText(text, 20), (int)rect.y + 12, 20, textColor);
+            DrawText("_", (int)rect.x + 8 + MeasureText(text, 21), (int)rect.y + 10, 21, textColor);
         }
     }
 }
@@ -177,4 +177,18 @@ void Slider::Draw() {
 
 float Slider::GetValue() {
     return currentValue;
+}
+
+string getResourcesPath(string nameFile)
+{
+    namespace fs = filesystem;
+    fs::path p = fs::current_path();
+
+    while(!fs::exists(p / "resources"))
+    {
+        if (p.has_parent_path()) p = p.parent_path();
+        else break;
+    }
+
+    return (p / "resources" / nameFile).string();
 }

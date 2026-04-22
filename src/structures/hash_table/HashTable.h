@@ -3,6 +3,7 @@
 #include <vector>
 #include <bitset>
 #include <string>
+#include <cmath>
 
 #include "../tree/AVL.h" 
 #include "../../UI/UI.h" 
