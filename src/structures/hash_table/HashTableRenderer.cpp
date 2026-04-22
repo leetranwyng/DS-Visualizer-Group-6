@@ -163,7 +163,7 @@ void RenderHashTable() {
                 if (v != -1) { myHash->erase(v); removeVInput.Clear(); }
             }
             else if (currentAction == ACTION_LOAD && loadGoButton.isPressed(mousePosition, mousePressed)) {
-                ifstream ifs("../../../resources/File_Input.txt");
+                ifstream ifs(getResourcesPath("File_Input.txt").c_str());
 
                 if (ifs.is_open()) {
                     vector<int> fileVals;

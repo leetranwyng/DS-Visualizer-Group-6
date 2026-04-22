@@ -385,7 +385,7 @@ void RenderAVL() {
             }
 
             if (currentAction == AVL_ACTION_INIT && fileBtn.isPressed(mousePos, mousePressed)) {
-                ifstream fin("../resources/File_Input.txt");
+                ifstream fin(getResourcesPath("File_Input.txt").c_str());
                 if (fin.is_open()) {
                     tree.root = tree.deleteTree(tree.root);
                     render.nodes.clear();
