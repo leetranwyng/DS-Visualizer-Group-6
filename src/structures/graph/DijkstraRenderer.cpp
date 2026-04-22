@@ -34,7 +34,7 @@ void drawPseudo(Dijkstra* &Graph)
 
     DrawText("Pseudocode:", posX+12, posY-60, 25, BLACK);
 
-    for (int i=0;i<pseudo.size();i++)
+    for (int i = 0; i < pseudo.size(); i++)
     {
         Color c = GRAY;
         if (pseudo[i].second == currentLine) 
@@ -64,20 +64,20 @@ void resetState()
     isConfirmed = isPopUp = isSize = 0;
     currentHistory.clear();
     oldHistory.clear();
-    for (auto &u: disHistory)
+    for (auto& u : disHistory)
     {
         u.clear();
         u.push_back(1e9);
     }
 }
 
-bool isSourceNode(int sourceNode, Dijkstra* &Graph)
+bool isSourceNode(int sourceNode, Dijkstra*& Graph)
 {
-    if (sourceNode!=-1 && sourceNode<Graph->size) return 1;
+    if (sourceNode != -1 && sourceNode < Graph->size) return 1;
     return 0;
 }
 
-void next_step(Button* &next_button, Dijkstra* &Graph, UI* &Visual, Tool* &tool, float speedSlider)
+void next_step(Button*& next_button, Dijkstra*& Graph, UI*& Visual, Tool*& tool, float speedSlider)
 {
     if (!isNextStep && isSourceNode(sourceNode, Graph) && !isPopUp && (next_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) || isPlaying))
     {
@@ -88,14 +88,14 @@ void next_step(Button* &next_button, Dijkstra* &Graph, UI* &Visual, Tool* &tool,
             currentHistory.push_back(s);
 
             Graph->history.erase(Graph->history.begin());
-            
+
             state upd = s;
             disHistory[upd.updatedNode].push_back(upd.newDis);
             int indexMax = disHistory[upd.updatedNode].size();
             oldHistory.push_back(upd);
 
 
-            while(Graph->history.size() && Graph->history[0].node==s.node)
+            while (Graph->history.size() && Graph->history[0].node == s.node)
             {
 
                 upd = Graph->history[0];
@@ -107,9 +107,9 @@ void next_step(Button* &next_button, Dijkstra* &Graph, UI* &Visual, Tool* &tool,
                 Graph->history.erase(Graph->history.begin());
             }
 
-            for (int i=0;i<Graph->size;i++)
+            for (int i = 0; i < Graph->size; i++)
             {
-                if (disHistory[i].size()<indexMax)
+                if (disHistory[i].size() < indexMax)
                 {
                     disHistory[i].push_back(disHistory[i].back());
                 }
@@ -117,12 +117,13 @@ void next_step(Button* &next_button, Dijkstra* &Graph, UI* &Visual, Tool* &tool,
 
             isNextStep = currentHistory.size();
             currentTime = 0;
-        } else isPlaying = 0;
+        }
+        else isPlaying = 0;
     }
 
     if (isNextStep)
     {
-        state s = currentHistory[currentHistory.size()-isNextStep];
+        state s = currentHistory[currentHistory.size() - isNextStep];
         float dt = GetFrameTime();
         currentTime += dt*speedSlider;
         if (currentTime <= 0.5)
@@ -181,8 +182,8 @@ void next_step(Button* &next_button, Dijkstra* &Graph, UI* &Visual, Tool* &tool,
             DrawText(c2, posV.x-MeasureText(c2, 30)/2, posV.y-30/2, 30, BLACK);
 
             tool->drawArrow(posU, posV, Visual->radius, GREEN);
-            
-            
+
+
         }
 
         if (currentTime > 2.5)
@@ -197,7 +198,6 @@ void next_step(Button* &next_button, Dijkstra* &Graph, UI* &Visual, Tool* &tool,
             const char* c1 = s1.c_str();
             DrawText(c1, pos.x-MeasureText(c1, 30)/2, pos.y-30/2, 30, BLACK);
 
-            
         }
 
         if (currentTime > 3)
@@ -226,7 +226,7 @@ void next_step(Button* &next_button, Dijkstra* &Graph, UI* &Visual, Tool* &tool,
     }
 }
 
-void back_step(Button* &back_button, Dijkstra* &Graph, UI* &Visual, Tool* &tool)
+void back_step(Button*& back_button, Dijkstra*& Graph, UI*& Visual, Tool*& tool)
 {
     if (!isNextStep && isSourceNode(sourceNode, Graph) && !isPlaying && !isPopUp && (back_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) || isBeginStep))
     {
@@ -236,13 +236,13 @@ void back_step(Button* &back_button, Dijkstra* &Graph, UI* &Visual, Tool* &tool)
             oldHistory.pop_back();
 
             Graph->history.insert(Graph->history.begin(), s);
-            while(oldHistory.size() && oldHistory.back().node==s.node)
+            while (oldHistory.size() && oldHistory.back().node == s.node)
             {
                 Graph->history.insert(Graph->history.begin(), oldHistory.back());
                 oldHistory.pop_back();
             }
 
-            for (int i=0;i<Graph->size;i++)
+            for (int i = 0; i < Graph->size; i++)
             {
                 disHistory[i].pop_back();
                 Visual->node[i].d = disHistory[i].back();
@@ -253,18 +253,18 @@ void back_step(Button* &back_button, Dijkstra* &Graph, UI* &Visual, Tool* &tool)
     }
 }
 
-void random_step(Button* &random_button, Dijkstra* &Graph, UI* &Visual, Tool* &tool)
+void random_step(Button*& random_button, Dijkstra*& Graph, UI*& Visual, Tool*& tool)
 {
     if (!isNextStep && !isPlaying && !isPopUp && random_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
     {
-        Graph->randomGraph(tool->random(2,7));
+        Graph->randomGraph(tool->random(2, 7));
         Visual->placeNode(Graph);
         sourceNode = -1;
         old_sourceNode = -1;
 
         oldHistory.clear();
 
-        for (int i=0;i<Graph->size;i++)
+        for (int i = 0; i < Graph->size; i++)
         {
             disHistory[i].clear();
             disHistory[i].push_back(1e9);
@@ -278,20 +278,20 @@ float scaleSpeed(float speedSlider)
     return (speedSlider - 1.0f) * 9.0f + 1.0f;
 }
 
-void sourceNodeInput(InputBox* &source_node, Dijkstra* &Graph, UI* &Visual, Tool* &tool)
+void sourceNodeInput(InputBox*& source_node, Dijkstra*& Graph, UI*& Visual, Tool*& tool)
 {
     if (!isNextStep && !isPlaying && !isPopUp)
     {
         source_node->checkPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON));
-        
+
         sourceNode = source_node->GetValue();
         source_node->Update();
     }
-    
+
     //cout<<sourceNode<<endl;
     if (!isSourceNode(sourceNode, Graph))
     {
-        for (int i=0; i<Graph->size; i++)
+        for (int i = 0; i < Graph->size; i++)
         {
             Visual->node[i].d = 1e9;
         }
@@ -303,7 +303,7 @@ void sourceNodeInput(InputBox* &source_node, Dijkstra* &Graph, UI* &Visual, Tool
         {
             Graph->implement(sourceNode);
         
-            for (int i=0; i<Graph->size; i++)
+            for (int i = 0; i < Graph->size; i++)
             {
                 Visual->node[i].d = 1e9;
             }
@@ -311,7 +311,7 @@ void sourceNodeInput(InputBox* &source_node, Dijkstra* &Graph, UI* &Visual, Tool
             //old_sourceNode = sourceNode;
             Visual->node[sourceNode].d = 0;
             
-            for (int i=0;i<Graph->size;i++)
+            for (int i = 0; i < Graph->size; i++)
             {
                 disHistory[i].clear();
                 disHistory[i].push_back(1e9);
@@ -326,7 +326,7 @@ void sourceNodeInput(InputBox* &source_node, Dijkstra* &Graph, UI* &Visual, Tool
 }
 
 
-void play_step(Dijkstra* &Graph, UI* &Visual, Tool* &tool, Button* &play_button, Button* &next_button)
+void play_step(Dijkstra*& Graph, UI*& Visual, Tool*& tool, Button*& play_button, Button*& next_button)
 {
     if (!isNextStep && isSourceNode(sourceNode, Graph) && !isPopUp && !isPlaying && play_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
     {
@@ -342,7 +342,7 @@ void play_step(Dijkstra* &Graph, UI* &Visual, Tool* &tool, Button* &play_button,
 
 
 
-void initialize_step(Dijkstra* &Graph, UI* &Visual, Button* &initialize_button, InputBox* &size_input, Button* &confirm_button, Button* &addEdge_button, Button* &finish_button, InputBox* &u_input, InputBox* &v_input, InputBox* &w_input)
+void initialize_step(Dijkstra*& Graph, UI*& Visual, Button*& initialize_button, InputBox*& size_input, Button*& confirm_button, Button*& addEdge_button, Button*& finish_button, InputBox*& u_input, InputBox*& v_input, InputBox*& w_input)
 {
     if (!isPopUp && !isPlaying && !isNextStep && initialize_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
     {
@@ -353,13 +353,13 @@ void initialize_step(Dijkstra* &Graph, UI* &Visual, Button* &initialize_button, 
     if (isPopUp)
     {
         DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), {0,0,0,100});
-        DrawRectangle(680-200+450, 425-225, 400, 450, WHITE);
-        DrawRectangleLinesEx({680-200+450, 425-225, 400, 450}, 5, DARKGRAY);
-        DrawText("Initialize Graph", 680-200+80+450, 425-225+10, 30, BLACK);
+        DrawRectangle(680 - 200 + 450, 425 - 225, 400, 450, WHITE);
+        DrawRectangleLinesEx({680 - 200 + 450, 425 - 225, 400, 450}, 5, DARKGRAY);
+        DrawText("Initialize Graph", 680 - 200 + 80 + 450, 425 - 225 + 10, 30, BLACK);
 
         if (!isConfirmed)
         {
-            DrawText("Number of vertices:", 680-200+100+450, 425-225+70, 20, BLACK);
+            DrawText("Number of vertices:", 680 - 200 + 100 + 450, 425 - 225 + 70, 20, BLACK);
             size_input->checkPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON));
             size_input->Update();
             size_input->Draw();
@@ -370,7 +370,7 @@ void initialize_step(Dijkstra* &Graph, UI* &Visual, Button* &initialize_button, 
 
             if (sizeInput!=-1)
             {
-                DrawText("Valid", 680-200+315+450, 425-225+165, 15, GREEN);
+                DrawText("Valid", 680 - 200 + 315 + 450, 425 - 225 + 165, 15, GREEN);
                 
                 if (confirm_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
                 {
@@ -383,18 +383,18 @@ void initialize_step(Dijkstra* &Graph, UI* &Visual, Button* &initialize_button, 
 
             } else
             {
-                DrawText("Invalid", 680-200+315+450, 425-225+165, 15, RED);
+                DrawText("Invalid", 680 - 200 + 315 + 450, 425 - 225 + 165, 15, RED);
             }
         } else
         {
-            DrawText("Vertices are indexed from 0 to n-1", 680-200+25+450, 425-225+60, 20, BLUE);
+            DrawText("Vertices are indexed from 0 to n-1", 680 - 200 + 25 + 450, 425 - 225 + 60, 20, BLUE);
 
-            DrawText("From u to v with weight w", 680-200+70+450, 425-225+120+1, 20, GREEN);
-            DrawText("From u to v with weight w", 680-200+70+450, 425-225+120, 20, BLACK);
+            DrawText("From u to v with weight w", 680 - 200 + 70 + 450, 425 - 225 + 120 + 1, 20, GREEN);
+            DrawText("From u to v with weight w", 680 - 200 + 70 + 450, 425 - 225 + 120, 20, BLACK);
 
-            DrawText("u:", 680-200+30+450, 425-225+190, 20, BLACK);
-            DrawText("v:", 680-200+220+450, 425-225+190, 20, BLACK);
-            DrawText("w:", 680-200+30+450, 425-225+260, 20, BLACK);
+            DrawText("u:", 680 - 200 + 30 + 450, 425 - 225 + 190, 20, BLACK);
+            DrawText("v:", 680 - 200 + 220 + 450, 425 - 225 + 190, 20, BLACK);
+            DrawText("w:", 680 - 200 + 30 + 450, 425 - 225 + 260, 20, BLACK);
 
             u_input->checkPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON));
             v_input->checkPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON));
@@ -412,10 +412,10 @@ void initialize_step(Dijkstra* &Graph, UI* &Visual, Button* &initialize_button, 
             finish_button->draw();
 
             //cout<<sizeInput<<endl;
-            DrawRectangle(680-200+260+450, 425-225+250, 100, 50, {220, 220, 220, 255});
+            DrawRectangle(680 - 200 + 260 + 450, 425 - 225 + 250, 100, 50, {220, 220, 220, 255});
             if (u_input->GetValue()!=-1 && u_input->GetValue()<sizeInput && v_input->GetValue()!=-1 && v_input->GetValue()<sizeInput && w_input->GetValue()!=-1)
             {
-                DrawText("Valid", 680-200+282+450, 425-228+265, 20, GREEN);
+                DrawText("Valid", 680 - 200 + 282 + 450, 425 - 228 + 265, 20, GREEN);
                 if (addEdge_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
                 {
                     
@@ -429,7 +429,7 @@ void initialize_step(Dijkstra* &Graph, UI* &Visual, Button* &initialize_button, 
 
             } else
             {
-                DrawText("Invalid", 680-200+277+450, 425-228+265, 20, RED);
+                DrawText("Invalid", 680 - 200 + 277 + 450, 425 - 228 + 265, 20, RED);
             }
 
             if (finish_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
@@ -446,7 +446,7 @@ void initialize_step(Dijkstra* &Graph, UI* &Visual, Button* &initialize_button, 
 
                 oldHistory.clear();
 
-                for (int i=0;i<Graph->size;i++)
+                for (int i = 0; i < Graph->size; i++)
                 {
                     disHistory[i].clear();
                     disHistory[i].push_back(1e9);
@@ -459,7 +459,7 @@ void initialize_step(Dijkstra* &Graph, UI* &Visual, Button* &initialize_button, 
     }
 }
 
-void begin_step(Dijkstra* &Graph, UI* &Visual, Tool* &tool, Button* &back_button, Button* &begin_button)
+void begin_step(Dijkstra*& Graph, UI*& Visual, Tool*& tool, Button*& back_button, Button*& begin_button)
 {
     if (!isPopUp && !isPlaying && !isNextStep && begin_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) && isSourceNode(sourceNode, Graph))
     {
@@ -471,7 +471,7 @@ void begin_step(Dijkstra* &Graph, UI* &Visual, Tool* &tool, Button* &back_button
     }
 }
 
-void end_step(Dijkstra* &Graph, UI* &Visual, Button* &end_button)
+void end_step(Dijkstra*& Graph, UI*& Visual, Button*& end_button)
 {
     if (!isPopUp && !isPlaying && !isNextStep && end_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) && isSourceNode(sourceNode, Graph))
     {
@@ -498,9 +498,9 @@ void end_step(Dijkstra* &Graph, UI* &Visual, Button* &end_button)
                 Graph->history.erase(Graph->history.begin());
             }
 
-            for (int i=0;i<Graph->size;i++)
+            for (int i = 0; i < Graph->size; i++)
             {
-                if (disHistory[i].size()<indexMax)
+                if (disHistory[i].size() < indexMax)
                 {
                     disHistory[i].push_back(disHistory[i].back());
                 }
@@ -508,7 +508,7 @@ void end_step(Dijkstra* &Graph, UI* &Visual, Button* &end_button)
             
         }
 
-        for (int i=0;i<Graph->size;i++)
+        for (int i = 0; i < Graph->size; i++)
         {
             Visual->node[i].d = disHistory[i].back();
         }
@@ -519,12 +519,12 @@ void RenderDijkstra()
 {
     constexpr int screenWidth = 1360;
     constexpr int screenHeight = 850;
-    
+
     InitWindow(screenWidth, screenHeight, "Dijkstra visualization");
     SetTargetFPS(60);
 
     resetState();
-    
+
     Dijkstra* Graph = new Dijkstra;
     Graph->randomGraph(5);
 
@@ -549,20 +549,20 @@ void RenderDijkstra()
     Slider* speed_slider = new Slider(230, 770, 350, 20, 0.1f, 2.0f, 1.0f);
 
     Button* initialize_button = new Button(870, 40, 200, 50, "Initialize", LIGHTGRAY);
-    
-    InputBox* size_input = new InputBox(680-200+100+450, 425-225+150, 200, 50);
 
-    Button* confirm_button = new Button(680-200+100+450, 425-225+300, 200, 50, "Confirm", LIGHTGRAY);
+    InputBox* size_input = new InputBox(680 - 200 + 100 + 450, 425 - 225 + 150, 200, 50);
 
-    InputBox* u_input = new InputBox(680-200+70+450, 425-225+180, 100, 50);
+    Button* confirm_button = new Button(680 - 200 + 100 + 450, 425 - 225 + 300, 200, 50, "Confirm", LIGHTGRAY);
 
-    InputBox* v_input = new InputBox(680-200+260+450, 425-225+180, 100, 50);
+    InputBox* u_input = new InputBox(680 - 200 + 70 + 450, 425 - 225 + 180, 100, 50);
 
-    InputBox* w_input = new InputBox(680-200+70+450, 425-225+250, 100, 50);
+    InputBox* v_input = new InputBox(680 - 200 + 260 + 450, 425 - 225 + 180, 100, 50);
 
-    Button* addEdge_button = new Button(680-200+70+450, 425-225+320, 100, 50, "Add Edge", LIGHTGRAY);
+    InputBox* w_input = new InputBox(680 - 200 + 70 + 450, 425 - 225 + 250, 100, 50);
 
-    Button* finish_button = new Button(680-200+260+450, 425-225+320, 100, 50, "Finish", RED);
+    Button* addEdge_button = new Button(680 - 200 + 70 + 450, 425 - 225 + 320, 100, 50, "Add Edge", LIGHTGRAY);
+
+    Button* finish_button = new Button(680 - 200 + 260 + 450, 425 - 225 + 320, 100, 50, "Finish", RED);
 
     while (!WindowShouldClose())
     {
@@ -588,7 +588,7 @@ void RenderDijkstra()
         sprintf(buf, "%.1fx", speedSlider);
         DrawText(buf, 590, 770, 20, BLACK);
         //cout<<speedSlider<<endl;
-        
+
         random_button->draw();
         random_step(random_button, Graph, Visual, tool);
 
@@ -622,6 +622,6 @@ void RenderDijkstra()
 
         EndDrawing();
     }
-    
+
     CloseWindow();
 }

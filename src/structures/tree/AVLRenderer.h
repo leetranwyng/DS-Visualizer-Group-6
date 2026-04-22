@@ -19,13 +19,6 @@ const int AVL_ACTION_VISIT = 3;
 const int AVL_ACTION_UPDATE = 4;
 const int AVL_ACTION_DELETE = 5;
 
-enum EventType {
-    VISIT,
-    INSERT,
-    ROTATE_LEFT,
-    ROTATE_RIGHT,
-};
-
 struct AVLevent {
     EventType type;
     TreeNode* nodeVal; //affected node
@@ -38,6 +31,8 @@ struct AVLRender {
     float stepTimer;
     float stepDelay;
     bool isVisualizing;
+    bool isPlaying;
+    bool stepMode;
     vector<NodeShape> nodes;
     vector<EdgeShape> edges;
 
@@ -47,6 +42,8 @@ struct AVLRender {
         stepDelay = 0.5f;
         stepTimer = 0.0f;
         isVisualizing = false;
+        isPlaying = false;
+        stepMode = false;
     };
 
     void handleEvent(EventType type, TreeNode* node);

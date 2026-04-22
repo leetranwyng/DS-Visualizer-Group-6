@@ -1,4 +1,4 @@
-#include "dijkstra.h"
+#include "Dijkstra.h"
 #include <iostream>
 #include <raylib.h>
 #include <queue>
@@ -24,7 +24,7 @@ void Dijkstra::implement(int sNode)
     d.resize(size);
     history.clear();
 
-    for (int i=0;i<size;i++) d[i] = INT_MAX;
+    for (int i = 0; i < size; i++) d[i] = INT_MAX;
 
     priority_queue<edge,vector<edge>,cmp> q;
 
@@ -56,7 +56,7 @@ int Tool::random(int l, int r)
     return uniform_int_distribution<>(l,r)(gen);
 }
 
-void Tool::shuffleVector(vector<Vector2> &contain)
+void Tool::shuffleVector(vector<Vector2>& contain)
 {
     random_device rd;
     mt19937 gen(rd());
@@ -84,9 +84,9 @@ bool Tool::isInNode(Vector2 pos, Vector2 node, float radius)
     return 0;
 }
 
-int Tool::posToNode(Vector2 pos, vector<Node> &node, float radius)
+int Tool::posToNode(Vector2 pos, vector<Node>& node, float radius)
 {
-    for (int i=0;i<node.size();i++)
+    for (int i = 0; i < node.size(); i++)
     {
         if (isInNode(pos,node[i].pos,radius)) return i;
     }
@@ -97,6 +97,7 @@ void Tool::drawArrow(Vector2 u, Vector2 v, float radius, Color color)
 {
     Vector2 direction = {v.x - u.x, v.y - u.y};
     float len = sqrt(direction.x*direction.x + direction.y*direction.y);
+    if (len == 0.0f) return;
     //if (len==0) cout<<u.x<<' '<<u.y<<' '<<v.x<<' '<<v.y<<'\n';
     direction.x/=len;
     direction.y/=len;
@@ -121,7 +122,7 @@ void Dijkstra::randomGraph(int n)
     int edge = tool.random(min(n,max),max);
     map<pair<int,int>, bool> used;
 
-    for (int i=0;i<edge;i++)
+    for (int i = 0; i < edge; i++)
     {
         int u = tool.random(0,n-1);
         int v = tool.random(0,n-1);
@@ -138,28 +139,28 @@ void Dijkstra::randomGraph(int n)
     }
 }
 
-void UI::placeNode(Dijkstra* &logic)
+void UI::placeNode(Dijkstra*& logic)
 {
     node.clear();
     node.resize(logic->size);
     vector<Vector2> pos;
 
-    for (int i=1;i<=lim;i++) for (int j=1;j<=lim;j++) pos.push_back({i*cellW,j*cellH});
+    for (int i = 1; i <= lim; i++) for (int j = 1; j <= lim; j++) pos.push_back({i*cellW, j*cellH});
 
     Tool tool;
     tool.shuffleVector(pos);
 
-    for (int i=0;i<logic->size;i++)
+    for (int i = 0; i < logic->size; i++)
     {
         node[i] = {pos[i],1000000000,0};
     }
 
 }
 
-void UI::drawNode(Dijkstra* &logic)
+void UI::drawNode(Dijkstra*& logic)
 {
     Tool tool;
-    for (int u=0;u<logic->size;u++)
+    for (int u = 0; u < logic->size; u++)
     {
         for (edge v: logic->adj[u])
         {
@@ -175,7 +176,7 @@ void UI::drawNode(Dijkstra* &logic)
         }
     }
 
-    for (int i=0;i<logic->size;i++)
+    for (int i = 0; i < logic->size; i++)
     {
         Vector2 pos = node[i].pos;
         DrawCircle(pos.x, pos.y, radius, WHITE);
