@@ -3,6 +3,9 @@
 #include "raylib.h"
 #include <vector>
 #include <string>
+#include <fstream>
+#include <filesystem>
+
 
 using namespace std;
 struct TreeNode;
@@ -53,6 +56,7 @@ public:
 
 void DrawLabel(float x, float y, string text, Color color = DARKGRAY);
 void DrawFlatButton(Rectangle rect, string text, Color bgColor, bool leftAlign = true);
+string getResourcesPath(string nameFile);
 
 struct NodeShape {
     TreeNode* node;

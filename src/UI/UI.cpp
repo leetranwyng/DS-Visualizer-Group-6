@@ -178,3 +178,17 @@ void Slider::Draw() {
 float Slider::GetValue() {
     return currentValue;
 }
+
+string getResourcesPath(string nameFile)
+{
+    namespace fs = filesystem;
+    fs::path p = fs::current_path();
+
+    while(!fs::exists(p / "resources"))
+    {
+        if (p.has_parent_path()) p = p.parent_path();
+        else break;
+    }
+
+    return (p / "resources" / nameFile).string();
+}

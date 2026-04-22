@@ -514,7 +514,7 @@ void loadFile_step(Dijkstra*& Graph, UI*& Visual, Button*& loadFile_button)
 {
     if (!isPopUp && !isPlaying && !isNextStep && loadFile_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
     {
-        ifstream fin("resources/File_Input_Dijkstra.txt");
+        ifstream fin(getResourcesPath("File_Input_Dijkstra.txt").c_str());
         int n, m;
         fin >> n >> m;
 
