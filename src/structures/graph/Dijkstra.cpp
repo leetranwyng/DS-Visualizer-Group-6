@@ -98,7 +98,7 @@ void Tool::drawArrow(Vector2 u, Vector2 v, float radius, Color color)
     Vector2 direction = {v.x - u.x, v.y - u.y};
     float len = sqrt(direction.x*direction.x + direction.y*direction.y);
     if (len == 0.0f) return;
-    //if (len==0) cout<<u.x<<' '<<u.y<<' '<<v.x<<' '<<v.y<<'\n';
+    
     direction.x/=len;
     direction.y/=len;
 
@@ -109,7 +109,7 @@ void Tool::drawArrow(Vector2 u, Vector2 v, float radius, Color color)
 
     Vector2 v1 = {touch.x - direction.x*size + per.x*size*0.5f, touch.y - direction.y*size + per.y*size*0.5f};
     Vector2 v2 = {touch.x - direction.x*size - per.x*size*0.5f, touch.y - direction.y*size - per.y*size*0.5f};
-    //cout<< touch.x << ' '<<touch.y<<' '<<v1.x<<' '<<v1.y<<' '<<v2.x<< ' '<<v2.y<<endl;
+    
     DrawTriangle(touch,v2,v1, color);
 }
 
@@ -181,7 +181,6 @@ void UI::drawNode(Dijkstra*& logic)
         Vector2 pos = node[i].pos;
         DrawCircle(pos.x, pos.y, radius, WHITE);
         DrawCircle(pos.x, pos.y, radius, {120,120,120,225});
-        //DrawCircleLines(pos.x, pos.y, radius, BLACK);
 
         string s = tool.convert(i);
         const char* c1 = s.c_str();
