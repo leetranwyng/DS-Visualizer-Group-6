@@ -1,7 +1,7 @@
 #include "Dijkstra.h"
 #include "DijkstraRenderer.h"
 #include <iostream>
-
+#include <fstream>
 
 int sourceNode = -1, old_sourceNode = -1;
 int isNextStep = 0, isPlaying = 0, currentLine = -100;
@@ -27,7 +27,7 @@ vector<pair<string, int>> pseudo = {
 
 void drawPseudo(Dijkstra* &Graph)
 {
-    float posX = 860, posY = 320;
+    float posX = 860, posY = 420;
 
     DrawRectangleRounded({posX-10, posY-20, 500, 300}, 0.1f, 5, {255,255,255,200});
     DrawRectangleRoundedLines({posX-10, posY-20, 500, 300}, 0.1f, 5, DARKGRAY);
@@ -191,8 +191,6 @@ void next_step(Button*& next_button, Dijkstra*& Graph, UI*& Visual, Tool*& tool,
             
             Vector2 pos = Visual->node[s.updatedNode].pos;
             DrawCircle(pos.x, pos.y, Visual->radius, ORANGE);
-            //DrawCircle(pos.x, pos.y, Visual->radius, {120,120,120,225});
-            //DrawCircleLines(pos.x, pos.y, radius, BLACK);
 
             string s1 = tool->convert(s.updatedNode);
             const char* c1 = s1.c_str();
@@ -288,7 +286,6 @@ void sourceNodeInput(InputBox*& source_node, Dijkstra*& Graph, UI*& Visual, Tool
         source_node->Update();
     }
 
-    //cout<<sourceNode<<endl;
     if (!isSourceNode(sourceNode, Graph))
     {
         for (int i = 0; i < Graph->size; i++)
@@ -308,7 +305,6 @@ void sourceNodeInput(InputBox*& source_node, Dijkstra*& Graph, UI*& Visual, Tool
                 Visual->node[i].d = 1e9;
             }
 
-            //old_sourceNode = sourceNode;
             Visual->node[sourceNode].d = 0;
             
             for (int i = 0; i < Graph->size; i++)
@@ -411,7 +407,6 @@ void initialize_step(Dijkstra*& Graph, UI*& Visual, Button*& initialize_button, 
             addEdge_button->draw();
             finish_button->draw();
 
-            //cout<<sizeInput<<endl;
             DrawRectangle(680 - 200 + 260 + 450, 425 - 225 + 250, 100, 50, {220, 220, 220, 255});
             if (u_input->GetValue()!=-1 && u_input->GetValue()<sizeInput && v_input->GetValue()!=-1 && v_input->GetValue()<sizeInput && w_input->GetValue()!=-1)
             {
@@ -515,6 +510,41 @@ void end_step(Dijkstra*& Graph, UI*& Visual, Button*& end_button)
     }
 }
 
+void loadFile_step(Dijkstra*& Graph, UI*& Visual, Button*& loadFile_button)
+{
+    if (!isPopUp && !isPlaying && !isNextStep && loadFile_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
+    {
+        ifstream fin("resources/File_Input_Dijkstra.txt");
+        int n, m;
+        fin >> n >> m;
+
+        Graph->size = n;
+        Graph->build_size();
+
+        for (int i = 0; i < m; i++)
+        {
+            int u, v, w;
+            fin >> u >> v >> w;
+            Graph->build_edge(u, v, w);
+            
+        }
+
+        Visual->placeNode(Graph);
+        sourceNode = -1;
+        old_sourceNode = -1;
+
+        oldHistory.clear();
+
+        for (int i = 0; i < Graph->size; i++)
+        {
+            disHistory[i].clear();
+            disHistory[i].push_back(1e9);
+        }
+
+        fin.close();
+    }
+}
+
 void RenderDijkstra()
 {
     constexpr int screenWidth = 1360;
@@ -533,7 +563,7 @@ void RenderDijkstra()
     
     Button* random_button = new Button(1100, 40, 200, 50, "Random", LIGHTGRAY);
 
-    InputBox* source_node = new InputBox(1100, 130, 200, 50);
+    InputBox* source_node = new InputBox(1100, 220, 200, 50);
 
     Button* next_button = new Button(480, 655, 120, 50, "Next", LIGHTGRAY);
     Tool* tool = new Tool;
@@ -564,6 +594,8 @@ void RenderDijkstra()
 
     Button* finish_button = new Button(680 - 200 + 260 + 450, 425 - 225 + 320, 100, 50, "Finish", RED);
 
+    Button* loadFile_button = new Button(1100, 130, 200, 50, "Load File", LIGHTGRAY);
+
     while (!WindowShouldClose())
     {
         BeginDrawing();
@@ -587,15 +619,13 @@ void RenderDijkstra()
         char buf[20];
         sprintf(buf, "%.1fx", speedSlider);
         DrawText(buf, 590, 770, 20, BLACK);
-        //cout<<speedSlider<<endl;
 
         random_button->draw();
         random_step(random_button, Graph, Visual, tool);
 
         source_node->Draw();
         sourceNodeInput(source_node, Graph, Visual, tool);
-        //DrawRectangle(905, 105, 150, 30, YELLOW);
-        DrawText("Start Node:", 910, 140, 25, BLACK);
+        DrawText("Start Node:", 910, 230, 25, BLACK);
         
         next_button->draw();
         if (!isPlaying) next_step(next_button, Graph, Visual, tool, speedSlider);
@@ -615,6 +645,11 @@ void RenderDijkstra()
 
         end_button->draw();
         end_step(Graph, Visual, end_button);
+
+        loadFile_button->draw();
+        DrawRectangleRounded({895, 140, 165, 30}, 0.3f, 8, LIGHTGRAY);
+        DrawText("n m | m lines: u v w", 905, 145, 18, BLACK);
+        loadFile_step(Graph, Visual, loadFile_button);
 
         initialize_button->draw();
         initialize_step(Graph, Visual, initialize_button, size_input, confirm_button, addEdge_button, finish_button, u_input, v_input, w_input);
