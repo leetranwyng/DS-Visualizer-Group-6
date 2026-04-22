@@ -24,7 +24,7 @@ void Dijkstra::implement(int sNode)
     d.resize(size);
     history.clear();
 
-    for (int i=0;i<size;i++) d[i] = INT_MAX;
+    for (int i = 0; i < size; i++) d[i] = INT_MAX;
 
     priority_queue<edge,vector<edge>,cmp> q;
 
@@ -56,7 +56,7 @@ int Tool::random(int l, int r)
     return uniform_int_distribution<>(l,r)(gen);
 }
 
-void Tool::shuffleVector(vector<Vector2> &contain)
+void Tool::shuffleVector(vector<Vector2>& contain)
 {
     random_device rd;
     mt19937 gen(rd());
@@ -84,9 +84,9 @@ bool Tool::isInNode(Vector2 pos, Vector2 node, float radius)
     return 0;
 }
 
-int Tool::posToNode(Vector2 pos, vector<Node> &node, float radius)
+int Tool::posToNode(Vector2 pos, vector<Node>& node, float radius)
 {
-    for (int i=0;i<node.size();i++)
+    for (int i = 0; i < node.size(); i++)
     {
         if (isInNode(pos,node[i].pos,radius)) return i;
     }
@@ -122,7 +122,7 @@ void Dijkstra::randomGraph(int n)
     int edge = tool.random(min(n,max),max);
     map<pair<int,int>, bool> used;
 
-    for (int i=0;i<edge;i++)
+    for (int i = 0; i < edge; i++)
     {
         int u = tool.random(0,n-1);
         int v = tool.random(0,n-1);
@@ -139,28 +139,28 @@ void Dijkstra::randomGraph(int n)
     }
 }
 
-void UI::placeNode(Dijkstra* &logic)
+void UI::placeNode(Dijkstra*& logic)
 {
     node.clear();
     node.resize(logic->size);
     vector<Vector2> pos;
 
-    for (int i=1;i<=lim;i++) for (int j=1;j<=lim;j++) pos.push_back({i*cellW,j*cellH});
+    for (int i = 1; i <= lim; i++) for (int j = 1; j <= lim; j++) pos.push_back({i*cellW, j*cellH});
 
     Tool tool;
     tool.shuffleVector(pos);
 
-    for (int i=0;i<logic->size;i++)
+    for (int i = 0; i < logic->size; i++)
     {
         node[i] = {pos[i],1000000000,0};
     }
 
 }
 
-void UI::drawNode(Dijkstra* &logic)
+void UI::drawNode(Dijkstra*& logic)
 {
     Tool tool;
-    for (int u=0;u<logic->size;u++)
+    for (int u = 0; u < logic->size; u++)
     {
         for (edge v: logic->adj[u])
         {
@@ -176,7 +176,7 @@ void UI::drawNode(Dijkstra* &logic)
         }
     }
 
-    for (int i=0;i<logic->size;i++)
+    for (int i = 0; i < logic->size; i++)
     {
         Vector2 pos = node[i].pos;
         DrawCircle(pos.x, pos.y, radius, WHITE);
@@ -185,11 +185,11 @@ void UI::drawNode(Dijkstra* &logic)
 
         string s = tool.convert(i);
         const char* c1 = s.c_str();
-        DrawText(c1, pos.x-7, pos.y-14, 30, BLACK);
+        DrawText(c1, pos.x-MeasureText(c1, 30)/2, pos.y-30/2, 30, BLACK);
 
         s = tool.convert(node[i].d);
         const char* c2 = s.c_str();
-        DrawText(c2, pos.x-radius+10, pos.y-radius-18, 20, BLACK);
+        DrawText(c2, pos.x-MeasureText(c2, 20)/2, pos.y-radius-18, 20, BLACK);
 
     }
 
@@ -206,7 +206,10 @@ void UI::moveNode()
 
     if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && usedNode!=-1)
     {
-        node[usedNode].pos = mouse;
+        if (mouse.x<=800 && mouse.x>=30 && mouse.y<=600 && mouse.y>=30)
+        {
+            node[usedNode].pos = mouse;
+        }
     }
 
     if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))

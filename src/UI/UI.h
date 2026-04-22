@@ -21,7 +21,7 @@ public:
 class InputBox {
 public:
     Rectangle rect;
-    char text[4];
+    char text[6];
     bool boxPressed;
     Color boxColor;
     Color textColor;
