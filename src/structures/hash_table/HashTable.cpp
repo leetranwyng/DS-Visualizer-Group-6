@@ -1,5 +1,4 @@
 #include "HashTable.h"
-#include <cmath>
 
 void hashTableVis::__setSieve() {
     isPrime[0] = isPrime[1] = 1;
@@ -146,7 +145,7 @@ void hashTableVis::buildSCEdges(int screenWidth) {
     float totalWidth = (TABLE_SIZE - 1) * paddingX;
     float startX = (screenWidth - totalWidth) / 2.0f;
     if (startX < 50) startX = 50;
-    float radius = 25.0f;
+    float radius = 26.0f;
 
     for (int i = 0; i < TABLE_SIZE; i++) {
         TreeNode* curr = chainingTable[i];
@@ -530,10 +529,10 @@ void hashTableVis::draw(int screenWidth, int screenHeight, Vector2 mousePos, boo
         }
     }
     else {
-        int boxWidth = 60, boxHeight = 60, padding = 10;
+        int boxWidth = 65, boxHeight = 65, padding = 15;
         int cols = (screenWidth - 200) / (boxWidth + padding);
         if (cols == 0) cols = 1;
-        int startX = (screenWidth - (cols * (boxWidth + padding) - padding)) / 2;
+        int startX = (screenWidth - (cols * (boxWidth + padding) - padding)) / 2 + 10;
         int startY = 150;
 
         for (int i = 0; i < TABLE_SIZE; i++) {
@@ -567,13 +566,13 @@ void hashTableVis::draw(int screenWidth, int screenHeight, Vector2 mousePos, boo
     }
 
     if (!isRevealing) {
-        int boxW = 580; int lineHeight = 32; int paddingBox = 20;
-        int topH = 45;
+        int boxW = 620; int lineHeight = 35; int paddingBox = 25;
+        int topH = 50;
         int codeH = pseudoCode.empty() ? 100 : (pseudoCode.size() * lineHeight + paddingBox * 2);
         int totalH = topH + codeH + 40;
 
-        int cbX = screenWidth - boxW;
-        int cbY = screenHeight - totalH - 85;
+        int cbX = screenWidth - boxW - 10; 
+        int cbY = screenHeight - totalH - 100; 
 
         int toggleW = 35;
         int toggleH = codeH;
@@ -583,15 +582,15 @@ void hashTableVis::draw(int screenWidth, int screenHeight, Vector2 mousePos, boo
             if (toggleBtn.isPressed(mousePos, mousePressed)) showCodeBox = false;
             toggleBtn.draw(false, true, false);
 
-            DrawText(codeTitle.c_str(), cbX, cbY, 26, BLACK);
-            DrawRectangle(cbX, cbY + 40, boxW, topH, { 52, 152, 219, 255 });
-            DrawText(codeStatus.c_str(), cbX + paddingBox, cbY + 40 + 12, 22, WHITE);
-            DrawRectangle(cbX, cbY + 40 + topH, boxW, codeH, { 41, 128, 185, 255 });
+            DrawText(codeTitle.c_str(), cbX, cbY, 28, BLACK);
+            DrawRectangle(cbX, cbY + 40, boxW + 10, topH, { 52, 152, 219, 255 });
+            DrawText(codeStatus.c_str(), cbX + paddingBox, cbY + 40 + 13, 24, WHITE);
+            DrawRectangle(cbX, cbY + 40 + topH, boxW + 10, codeH, { 41, 128, 185, 255 });
 
             for (int i = 0; i < pseudoCode.size(); i++) {
                 int textY = cbY + 40 + topH + paddingBox + i * lineHeight;
                 if (i == activeCodeLine) DrawRectangle(cbX, textY - 4, boxW, lineHeight, BLACK);
-                DrawText(pseudoCode[i].c_str(), cbX + paddingBox, textY, 22, WHITE);
+                DrawText(pseudoCode[i].c_str(), cbX + paddingBox, textY, 24, WHITE);
             }
         }
         else {
