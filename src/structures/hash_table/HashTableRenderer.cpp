@@ -1,12 +1,15 @@
 ﻿#include "HashTable.h"
 #include "../../UI/UI.h"
 #include "HashTableRenderer.h"
+#include "../../UI/FontManager.h"
 
 void RenderHashTable() {
     const int screenWidth = 1200;
     const int screenHeight = 700;
     InitWindow(screenWidth, screenHeight, "Hash Table Visualizer (LP, QP, DH, SC)");
     SetTargetFPS(60);
+    LoadGlobalFonts();
+
     srand((unsigned int)time(0));
 
     bool isMenuExpanded = true;
@@ -21,7 +24,6 @@ void RenderHashTable() {
     }
     myHash->startReveal();
 
-    // UI CONFIG
     float menuWidth_Expanded = 180;
     float menuWidth_Collapsed = 35;
     float buttonHeight = 45;
@@ -29,8 +31,9 @@ void RenderHashTable() {
     float bottomBarHeight = 40;
     float startY = screenHeight - bottomBarHeight - (4 * buttonHeight) - 80;
 
-    Color menuColor = { 210, 80, 50, 255 };
-    Color toggleColor = { 190, 60, 40, 255 };
+    Color menuColor = Color{ 59, 130, 246, 255 };
+    Color toggleColor = Color{ 37, 99, 235, 255 };
+    Button menuBackButton(45, 18, 90, 40, "Back", Color{ 245, 247, 250, 255 });
 
     Button collapseButton(0, startY, menuWidth_Collapsed, 5 * buttonHeight, "<", toggleColor);
     Button expandButton(0, startY, menuWidth_Collapsed, 5 * buttonHeight, ">", toggleColor);
@@ -43,20 +46,26 @@ void RenderHashTable() {
 
     float panelX = menuWidth_Collapsed + menuWidth_Expanded + 15;
 
-    InputBox mInput(panelX + MeasureText("New HT of size M = ", 20), createMenuButton.rect.y, 60, buttonHeight, BLACK, WHITE);
-    InputBox nInput(mInput.rect.x + mInput.rect.width + MeasureText(" and N = ", 20), createMenuButton.rect.y, 60, buttonHeight, BLACK, WHITE);
-    Button createGoButton(nInput.rect.x + nInput.rect.width + MeasureText(" random integers ", 20), createMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
+    float newHTLabelW = MeasureUIFont("New HT of size M = ", 20).x;
+    float andNLabelW = MeasureUIFont(" and N = ", 20).x;
+    float randomLabelW = MeasureUIFont(" random integers ", 20).x;
+    float vLabelW = MeasureUIFont("v = ", 20).x;
+    float loadLabelW = MeasureUIFont("Read 'File_Input.txt' ", 20).x;
 
-    InputBox searchVInput(panelX + MeasureText("v = ", 20), searchMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
+    InputBox mInput(panelX + newHTLabelW, createMenuButton.rect.y, 60, buttonHeight, BLACK, WHITE);
+    InputBox nInput(mInput.rect.x + mInput.rect.width + andNLabelW, createMenuButton.rect.y, 60, buttonHeight, BLACK, WHITE);
+    Button createGoButton(nInput.rect.x + nInput.rect.width + randomLabelW, createMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
+
+    InputBox searchVInput(panelX + vLabelW, searchMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
     Button searchGoButton(searchVInput.rect.x + searchVInput.rect.width + 5, searchMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
 
-    InputBox insertVInput(panelX + MeasureText("v = ", 20), insertMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
+    InputBox insertVInput(panelX + vLabelW, insertMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
     Button insertGoButton(insertVInput.rect.x + insertVInput.rect.width + 5, insertMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
 
-    InputBox removeVInput(panelX + MeasureText("v = ", 20), removeMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
+    InputBox removeVInput(panelX + vLabelW, removeMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
     Button removeGoButton(removeVInput.rect.x + removeVInput.rect.width + 5, removeMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
 
-    Button loadGoButton(panelX + MeasureText("Read 'File_Input.txt' ", 20), loadMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
+    Button loadGoButton(panelX + loadLabelW, loadMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
     string loadStatusText = "";
 
     Slider speedSlider(40, screenHeight - 40, 200, 20, 1.5f, 0.05f, 0.5f);
@@ -67,22 +76,25 @@ void RenderHashTable() {
 
         Vector2 mousePosition = GetMousePosition();
         bool mousePressed = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+        if (menuBackButton.isPressed(mousePosition, mousePressed)) {
+            break;
+        }
 
         string textLP = (currentProbingMode == 0) ? "LINEAR PROBING" : "LP";
         string textQP = (currentProbingMode == 1) ? "QUADRATIC PROBING" : "QP";
         string textDH = (currentProbingMode == 2) ? "DOUBLE HASHING" : "DH";
         string textSC = (currentProbingMode == 3) ? "SEPARATE CHAINING" : "SC";
 
-        int widthSC = MeasureText(textSC.c_str(), 25) + 20;
-        int widthDH = MeasureText(textDH.c_str(), 25) + 20;
-        int widthQP = MeasureText(textQP.c_str(), 25) + 20;
-        int widthLP = MeasureText(textLP.c_str(), 25) + 20;
+        float widthSC = MeasureUIFont(textSC, 25).x + 20;
+        float widthDH = MeasureUIFont(textDH, 25).x + 20;
+        float widthQP = MeasureUIFont(textQP, 25).x + 20;
+        float widthLP = MeasureUIFont(textLP, 25).x + 20;
 
         int modeSpacing = 10;
-        int startX_SC = screenWidth - widthSC - 20;
-        int startX_DH = startX_SC - widthDH - modeSpacing;
-        int startX_QP = startX_DH - widthQP - modeSpacing;
-        int startX_LP = startX_QP - widthLP - modeSpacing;
+        int startX_SC = (int)(screenWidth - widthSC - 20);
+        int startX_DH = (int)(startX_SC - widthDH - modeSpacing);
+        int startX_QP = (int)(startX_DH - widthQP - modeSpacing);
+        int startX_LP = (int)(startX_QP - widthLP - modeSpacing);
 
         Color colorLP = (currentProbingMode == 0) ? Color{ 210, 210, 210, 255 } : Color{ 240, 240, 240, 255 };
         Color colorQP = (currentProbingMode == 1) ? Color{ 210, 210, 210, 255 } : Color{ 240, 240, 240, 255 };
@@ -212,7 +224,7 @@ void RenderHashTable() {
         if (btnSkipNext.isPressed(mousePosition, mousePressed)) myHash->skipToEnd();
 
         BeginDrawing();
-        ClearBackground({ 240, 240, 240, 255 });
+        ClearBackground(Color{ 244, 247, 251, 255 });
 
         myHash->draw(screenWidth, screenHeight, mousePosition, mousePressed);
 
@@ -222,9 +234,11 @@ void RenderHashTable() {
         else if (currentProbingMode == 2) titleText = "Double Hashing Hash Map";
         else if (currentProbingMode == 3) titleText = "Separate Chaining Hash Map";
 
-        DrawText(titleText.c_str(), 60, 25, 32, DARKGRAY);
-        DrawText("Green: Occupied | White (E): Empty (-1) | Red (D): Deleted (-2)", 60, 60, 20, GRAY);
-        DrawRectangle(0, 0, 35, screenHeight, BLACK);
+        menuBackButton.draw();
+
+        DrawModernTitle(160, 25, titleText, Color{ 40, 48, 64, 255 });
+        DrawModernSubtitle(160, 65, "Green: Occupied | White (E): Empty (-1) | Red (D): Deleted (-2)", Color{ 120, 130, 150, 255 });
+        DrawModernPanel({ 0, 0, 35, (float)screenHeight }, BLACK);
 
         modeBtnLP.draw(false, false, false);
         modeBtnQP.draw(false, false, false);
@@ -247,41 +261,41 @@ void RenderHashTable() {
             int labelOffsetY = 12;
             switch (currentAction) {
             case ACTION_CREATE:
-                DrawText("New HT of size M =", (int)panelX, (int)(createMenuButton.rect.y + labelOffsetY), 20, BLACK);
+                DrawUIFont("New HT of size M =", panelX, createMenuButton.rect.y + labelOffsetY, 20, BLACK);
                 mInput.Draw();
-                DrawText("and N =", (int)(mInput.rect.x + mInput.rect.width + 5), (int)(createMenuButton.rect.y + labelOffsetY), 20, BLACK);
+                DrawUIFont("and N =", mInput.rect.x + mInput.rect.width + 5, createMenuButton.rect.y + labelOffsetY, 20, BLACK);
                 nInput.Draw();
-                DrawText("random integers", (int)(nInput.rect.x + nInput.rect.width + 5), (int)(createMenuButton.rect.y + labelOffsetY), 20, BLACK);
+                DrawUIFont("random integers", nInput.rect.x + nInput.rect.width + 5, createMenuButton.rect.y + labelOffsetY, 20, BLACK);
                 createGoButton.draw(false, true, false);
                 break;
             case ACTION_SEARCH:
-                DrawText("v =", (int)panelX, (int)(searchMenuButton.rect.y + labelOffsetY), 20, BLACK);
+                DrawUIFont("v =", panelX, searchMenuButton.rect.y + labelOffsetY, 20, BLACK);
                 searchVInput.Draw();
                 searchGoButton.draw(false, true, false);
                 break;
             case ACTION_INSERT:
-                DrawText("v =", (int)panelX, (int)(insertMenuButton.rect.y + labelOffsetY), 20, BLACK);
+                DrawUIFont("v =", panelX, insertMenuButton.rect.y + labelOffsetY, 20, BLACK);
                 insertVInput.Draw();
                 insertGoButton.draw(false, true, false);
                 break;
             case ACTION_REMOVE:
-                DrawText("v =", (int)panelX, (int)(removeMenuButton.rect.y + labelOffsetY), 20, BLACK);
+                DrawUIFont("v =", panelX, removeMenuButton.rect.y + labelOffsetY, 20, BLACK);
                 removeVInput.Draw();
                 removeGoButton.draw(false, true, false);
                 break;
             case ACTION_LOAD:
-                DrawText("Read 'input.txt'", (int)panelX, (int)(loadMenuButton.rect.y + labelOffsetY), 20, BLACK);
+                DrawUIFont("Read 'input.txt'", panelX, loadMenuButton.rect.y + labelOffsetY, 20, BLACK);
                 loadGoButton.draw(false, true, false);
-                if (loadStatusText != "") {
+                if (!loadStatusText.empty()) {
                     Color statusColor = (loadStatusText[0] == 'E') ? RED : BLUE;
-                    DrawText(loadStatusText.c_str(), (int)(loadGoButton.rect.x + loadGoButton.rect.width + 10), (int)(loadMenuButton.rect.y + labelOffsetY), 20, statusColor);
+                    DrawUIFont(loadStatusText, loadGoButton.rect.x + loadGoButton.rect.width + 10, loadMenuButton.rect.y + labelOffsetY, 20, statusColor);
                 }
                 break;
             case ACTION_NONE: break;
             }
         }
 
-        DrawRectangle(0, screenHeight - 60, screenWidth, 60, BLACK);
+        DrawModernPanel({ 0, (float)screenHeight - 60, (float)screenWidth, 60 }, BLACK);
 
         speedSlider.Draw();
 
@@ -293,7 +307,7 @@ void RenderHashTable() {
         else if (myHash->animationDelay <= 1.2f) speedText = "x0.5";
         else speedText = "x0.25";
 
-        DrawText(speedText.c_str(), 260, screenHeight - 41, 23, WHITE); 
+        DrawUIFont(speedText, 260, screenHeight - 41, 23, WHITE);
 
         btnSkipPrev.draw(false, true, false);
         btnStepPrev.draw(false, true, false);
@@ -305,5 +319,6 @@ void RenderHashTable() {
     }
 
     delete myHash;
+    UnloadGlobalFonts();
     CloseWindow();
 }

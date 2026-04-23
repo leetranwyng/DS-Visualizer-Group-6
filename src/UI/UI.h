@@ -1,76 +1,57 @@
 #pragma once
-
 #include "raylib.h"
-#include <vector>
 #include <string>
-#include <fstream>
-#include <filesystem>
-
-
 using namespace std;
-struct TreeNode;
 
-class Button {
-public:
+struct Button {
     Rectangle rect;
     string text;
     Color color;
-    Button(float x, float y, float width, float height, string text, Color color);
-    void draw(bool haveBorder = true, bool isFlat = false, bool leftAlign = false);
 
+    Button(float x, float y, float width, float height, string txt, Color col)
+        : rect{ x, y, width, height }, text(txt), color(col) {
+    }
+
+    void draw(bool haveBorder = true, bool isFlat = false, bool leftAlign = false);
     bool isPressed(Vector2 mousePos, bool mousePressed);
 };
 
-class InputBox {
-public:
+struct InputBox {
     Rectangle rect;
-    char text[6];
+    char text[64];
+    int letterCount;
     bool boxPressed;
     Color boxColor;
     Color textColor;
 
-    InputBox(float x, float y, float width, float height, Color bg = LIGHTGRAY, Color txt = MAROON);
+    InputBox(float x, float y, float width, float height, Color txtColor, Color bgColor);
+
     void Update();
     void Draw();
-    int GetValue();
     void Clear();
+    int GetValue();
     void checkPressed(Vector2 mousePos, bool mousePressed);
-private:
-    int letterCount;
-    int framesCounter;
 };
 
-class Slider {
-public:
+struct Slider {
     Rectangle bounds;
     float minValue;
     float maxValue;
     float currentValue;
     bool isDragging;
 
-    Slider(float x, float y, float width, float height, float minVal, float maxVal, float initialVal);
+    Slider(float x, float y, float width, float height, float minVal, float maxVal, float currentVal);
+
     void Update(Vector2 mousePos, bool mouseDown);
     void Draw();
-    float GetValue();
+    float GetValue() const;
 };
+
+string getResourcesPath(const string& filename);
 
 void DrawLabel(float x, float y, string text, Color color = DARKGRAY);
-void DrawFlatButton(Rectangle rect, string text, Color bgColor, bool leftAlign = true);
-string getResourcesPath(string nameFile);
+void DrawFlatButton(Rectangle rect, string text, Color bgColor, bool leftAlign = false);
 
-struct NodeShape {
-    TreeNode* node;
-    Vector2 current; //current position
-    Vector2 target; //final position
-    float radius;
-    Color color;
-};
-
-struct EdgeShape {
-    TreeNode* parent;
-    TreeNode* child;
-    Vector2 start;
-    Vector2 end;
-    Color color;
-};
-
+void DrawModernPanel(Rectangle rect, Color fill, Color border = Color{ 210, 218, 230, 255 }, float shadowAlpha = 0.10f);
+void DrawModernTitle(float x, float y, const string& text, Color color = Color{ 40, 48, 64, 255 });
+void DrawModernSubtitle(float x, float y, const string& text, Color color = Color{ 120, 130, 150, 255 });

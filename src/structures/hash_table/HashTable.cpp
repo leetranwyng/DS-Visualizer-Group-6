@@ -1,4 +1,5 @@
 #include "HashTable.h"
+#include "../../UI/FontManager.h"
 
 void hashTableVis::__setSieve() {
     isPrime[0] = isPrime[1] = 1;
@@ -119,8 +120,10 @@ void hashTableVis::startReveal() {
     }
 }
 
-NodeShape* hashTableVis::findSCNode(TreeNode* node) {
-    for (auto& n : scNodes) { if (n.node == node) return &n; }
+SCNodeShape* hashTableVis::findSCNode(TreeNode* node) {
+    for (auto& n : scNodes) {
+        if (n.node == node) return &n;
+    }
     return nullptr;
 }
 
@@ -150,32 +153,47 @@ void hashTableVis::buildSCEdges(int screenWidth) {
     for (int i = 0; i < TABLE_SIZE; i++) {
         TreeNode* curr = chainingTable[i];
         if (!curr) continue;
-        NodeShape* childShape = findSCNode(curr);
+
+        SCNodeShape* childShape = findSCNode(curr);
         if (childShape) {
             Vector2 parentPos = { startX + i * paddingX, startY };
             Vector2 childPos = childShape->current;
             Vector2 dir = { childPos.x - parentPos.x, childPos.y - parentPos.y };
-            float dist = sqrt(dir.x * dir.x + dir.y * dir.y);
-            if (dist > 0) { dir.x /= dist; dir.y /= dist; }
+            float dist = sqrtf(dir.x * dir.x + dir.y * dir.y);
+            if (dist > 0.0f) {
+                dir.x /= dist;
+                dir.y /= dist;
+            }
 
-            EdgeShape e; e.parent = nullptr; e.child = curr;
+            SCEdgeShape e;
+            e.parent = nullptr;
+            e.child = curr;
             e.start = { parentPos.x + dir.x * radius, parentPos.y + dir.y * radius };
             e.end = { childPos.x - dir.x * radius, childPos.y - dir.y * radius };
-            e.color = DARKGRAY; scEdges.push_back(e);
+            e.color = DARKGRAY;
+            scEdges.push_back(e);
         }
 
         while (curr && curr->right) {
-            NodeShape* pShape = findSCNode(curr); NodeShape* cShape = findSCNode(curr->right);
+            SCNodeShape* pShape = findSCNode(curr);
+            SCNodeShape* cShape = findSCNode(curr->right);
             if (pShape && cShape) {
-                Vector2 pPos = pShape->current; Vector2 cPos = cShape->current;
+                Vector2 pPos = pShape->current;
+                Vector2 cPos = cShape->current;
                 Vector2 dir = { cPos.x - pPos.x, cPos.y - pPos.y };
-                float dist = sqrt(dir.x * dir.x + dir.y * dir.y);
-                if (dist > 0) { dir.x /= dist; dir.y /= dist; }
+                float dist = sqrtf(dir.x * dir.x + dir.y * dir.y);
+                if (dist > 0.0f) {
+                    dir.x /= dist;
+                    dir.y /= dist;
+                }
 
-                EdgeShape e; e.parent = curr; e.child = curr->right;
+                SCEdgeShape e;
+                e.parent = curr;
+                e.child = curr->right;
                 e.start = { pPos.x + dir.x * pShape->radius, pPos.y + dir.y * pShape->radius };
                 e.end = { cPos.x - dir.x * cShape->radius, cPos.y - dir.y * cShape->radius };
-                e.color = DARKGRAY; scEdges.push_back(e);
+                e.color = DARKGRAY;
+                scEdges.push_back(e);
             }
             curr = curr->right;
         }
@@ -313,9 +331,15 @@ void hashTableVis::insert(int value, bool animate) {
             if (!prev) chainingTable[idx] = newNode; else prev->right = newNode;
             keysPresent++; newlyInsertedNode = newNode;
 
-            NodeShape nShape; nShape.node = newNode; nShape.radius = 25.0f;
-            nShape.color = RAYWHITE; nShape.current = { 600, 50 }; nShape.target = { 600, 50 };
-            scNodes.push_back(nShape); scProbePath.push_back(newNode);
+            SCNodeShape nShape;
+            nShape.node = newNode;
+            nShape.radius = 25.0f;
+            nShape.color = RAYWHITE;
+            nShape.current = { 600.0f, 50.0f };
+            nShape.target = { 600.0f, 50.0f };
+            scNodes.push_back(nShape);
+            scProbePath.push_back(newNode);
+
         }
         if (!animate) { hasActiveAnimation = false; return; }
 
@@ -566,9 +590,11 @@ void hashTableVis::draw(int screenWidth, int screenHeight, Vector2 mousePos, boo
     }
 
     if (!isRevealing) {
-        int boxW = 580; int lineHeight = 32; int paddingBox = 20;
-        int topH = 45;
-        int codeH = pseudoCode.empty() ? 100 : (pseudoCode.size() * lineHeight + paddingBox * 2);
+        int boxW = 580;
+        int lineHeight = 36;
+        int paddingBox = 22;
+        int topH = 50;
+        int codeH = pseudoCode.empty() ? 100 : (int)pseudoCode.size() * lineHeight + paddingBox * 2;
         int totalH = topH + codeH + 40;
 
         int cbX = screenWidth - boxW;
@@ -582,15 +608,17 @@ void hashTableVis::draw(int screenWidth, int screenHeight, Vector2 mousePos, boo
             if (toggleBtn.isPressed(mousePos, mousePressed)) showCodeBox = false;
             toggleBtn.draw(false, true, false);
 
-            DrawText(codeTitle.c_str(), cbX, cbY, 26, BLACK);
+            DrawUIFont(codeTitle.c_str(), cbX, cbY, 26, BLACK);
             DrawRectangle(cbX, cbY + 40, boxW, topH, { 52, 152, 219, 255 });
-            DrawText(codeStatus.c_str(), cbX + paddingBox, cbY + 40 + 12, 22, WHITE);
+            DrawUIFont(codeStatus.c_str(), cbX + paddingBox, cbY + 40 + 12, 22, WHITE);
             DrawRectangle(cbX, cbY + 40 + topH, boxW, codeH, { 41, 128, 185, 255 });
 
-            for (int i = 0; i < pseudoCode.size(); i++) {
+            for (int i = 0; i < (int)pseudoCode.size(); i++) {
                 int textY = cbY + 40 + topH + paddingBox + i * lineHeight;
-                if (i == activeCodeLine) DrawRectangle(cbX, textY - 4, boxW, lineHeight, BLACK);
-                DrawText(pseudoCode[i].c_str(), cbX + paddingBox, textY, 22, WHITE);
+                if (i == activeCodeLine) {
+                    DrawRectangle(cbX, textY - 4, boxW, lineHeight, BLACK);
+                }
+                DrawUIFont(pseudoCode[i].c_str(), cbX + paddingBox, textY, 22, WHITE);
             }
         }
         else {

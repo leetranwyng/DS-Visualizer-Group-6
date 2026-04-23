@@ -2,12 +2,14 @@
 #include "LinkedList.h"
 #include "../../UI/UI.h"
 #include "raylib.h"
+#include "../../UI/FontManager.h"
 
 #include <string>
 #include <vector>
 #include <cstdlib>
 #include <ctime>
 #include <cstring>
+#include <fstream>
 
 enum AnimationType {
     ANIM_NONE,
@@ -69,11 +71,6 @@ struct OperationState {
     int highlightLine = -1;
 };
 
-static Font gUiFont;
-static Font gCodeFont;
-static bool gUnloadUiFont = false;
-static bool gUnloadCodeFont = false;
-
 static Vector2 MeasureTextFont(Font font, const std::string& text, float fontSize, float spacing = 0.0f) {
     return MeasureTextEx(font, text.c_str(), fontSize, spacing);
 }
@@ -83,50 +80,50 @@ static void DrawTextFont(Font font, const std::string& text, float x, float y, f
 }
 
 static Vector2 MeasureUI(const std::string& text, float fontSize, float spacing = 0.0f) {
-    return MeasureTextFont(gUiFont, text, fontSize, spacing);
+    return MeasureUIFont(text, fontSize, spacing);
 }
 
 static void DrawUI(const std::string& text, float x, float y, float fontSize, Color color, float spacing = 0.0f) {
-    DrawTextFont(gUiFont, text, x, y, fontSize, color, spacing);
+    DrawUIFont(text, x, y, fontSize, color, spacing);
 }
 
 static Vector2 MeasureCode(const std::string& text, float fontSize, float spacing = 0.0f) {
-    return MeasureTextFont(gCodeFont, text, fontSize, spacing);
+    return MeasureCodeFont(text, fontSize, spacing);
 }
 
 static void DrawCode(const std::string& text, float x, float y, float fontSize, Color color, float spacing = 0.0f) {
-    DrawTextFont(gCodeFont, text, x, y, fontSize, color, spacing);
+    DrawCodeFont(text, x, y, fontSize, color, spacing);
 }
 
 static Theme MakeTheme() {
     Theme t;
-    t.bg = Color{ 244, 247, 251, 255 };
+    t.bg = Color{ 245, 247, 250, 255 };
     t.panel = Color{ 255, 255, 255, 255 };
-    t.panelAlt = Color{ 250, 252, 255, 255 };
-    t.border = Color{ 226, 232, 240, 255 };
+    t.panelAlt = Color{ 249, 250, 251, 255 };
+    t.border = Color{ 221, 226, 234, 255 };
     t.shadow = Color{ 15, 23, 42, 255 };
 
-    t.text = Color{ 15, 23, 42, 255 };
-    t.textSoft = Color{ 71, 85, 105, 255 };
+    t.text = Color{ 17, 24, 39, 255 };
+    t.textSoft = Color{ 75, 85, 99, 255 };
     t.textMuted = Color{ 148, 163, 184, 255 };
 
-    t.primary = Color{ 59, 130, 246, 255 };
+    t.primary = Color{ 37, 99, 235, 255 };
     t.primarySoft = Color{ 219, 234, 254, 255 };
 
-    t.success = Color{ 34, 197, 94, 255 };
+    t.success = Color{ 22, 163, 74, 255 };
     t.successSoft = Color{ 220, 252, 231, 255 };
 
-    t.danger = Color{ 239, 68, 68, 255 };
+    t.danger = Color{ 220, 38, 38, 255 };
     t.dangerSoft = Color{ 254, 226, 226, 255 };
 
-    t.warning = Color{ 245, 158, 11, 255 };
+    t.warning = Color{ 217, 119, 6, 255 };
     t.warningSoft = Color{ 254, 243, 199, 255 };
 
-    t.cyan = Color{ 6, 182, 212, 255 };
-    t.cyanSoft = Color{ 207, 250, 254, 255 };
+    t.cyan = Color{ 107, 114, 128, 255 };
+    t.cyanSoft = Color{ 243, 244, 246, 255 };
 
-    t.violet = Color{ 139, 92, 246, 255 };
-    t.violetSoft = Color{ 237, 233, 254, 255 };
+    t.violet = Color{ 107, 114, 128, 255 };
+    t.violetSoft = Color{ 243, 244, 246, 255 };
 
     return t;
 }
@@ -163,6 +160,37 @@ static int FindFirstIndex(const std::vector<int>& values, int target) {
         if (values[i] == target) return i;
     }
     return -1;
+}
+
+static bool LoadIntegerListRaw(const std::string& path, std::vector<int>& values) {
+    values.clear();
+
+    std::ifstream fin(path.c_str());
+    if (!fin.is_open()) return false;
+
+    int x;
+    while (fin >> x) {
+        values.push_back(x);
+    }
+    fin.close();
+
+    if (values.empty()) return false;
+
+    if (values.size() >= 2 && values[0] == (int)values.size() - 1) {
+        values.erase(values.begin());
+    }
+
+    return !values.empty();
+}
+
+static bool LoadIntegerListFromAnyPath(const std::string& userPath, std::vector<int>& values, std::string& resolvedPath) {
+    resolvedPath = userPath;
+    if (LoadIntegerListRaw(resolvedPath, values)) return true;
+
+    resolvedPath = getResourcesPath(userPath);
+    if (LoadIntegerListRaw(resolvedPath, values)) return true;
+
+    return false;
 }
 
 static std::vector<std::string> GetPseudoCode(AnimationType type) {
@@ -368,13 +396,10 @@ static void DrawDoubleArrow(int x, int y, int nodeWidth, int spacing, const Them
 
 static void DrawLinkedListMinimal(const LinkedList& list, Rectangle canvasPanel, const OperationState& op, const Theme& theme) {
     DrawPanel(canvasPanel, 0.06f, theme, theme.panelAlt);
-    DrawUI("Linked List", canvasPanel.x + 22, canvasPanel.y + 18, 26, theme.text);
-
-    DrawCanvasGrid(canvasPanel);
+    DrawUI("Linked List", canvasPanel.x + 20, canvasPanel.y + 18, 24, theme.text);
 
     std::vector<int> values = list.toVector();
     if (values.empty()) {
-        DrawUI("List is empty", canvasPanel.x + 46, canvasPanel.y + 158, 30, theme.textMuted);
         return;
     }
 
@@ -433,31 +458,28 @@ static void DrawLinkedListMinimal(const LinkedList& list, Rectangle canvasPanel,
 }
 
 static void DrawCodePanelMinimal(const OperationState& op, const Theme& theme) {
-    Rectangle panel = { 1028, 112, 448, 736 };
+    Rectangle panel = { 994, 112, 342, 666 };
     DrawPanel(panel, 0.06f, theme, theme.panel);
 
-    DrawUI("Pseudocode", 1054, 132, 28, theme.text);
+    DrawUI("Pseudocode", 1018, 136, 26, theme.text);
 
-    std::string opName = "Idle";
+    std::string opName = "";
     if (op.type == ANIM_SEARCH) opName = "Search";
     else if (op.type == ANIM_INSERT_FRONT) opName = "Insert Front";
     else if (op.type == ANIM_INSERT_BACK) opName = "Insert Back";
     else if (op.type == ANIM_DELETE) opName = "Delete";
     else if (op.type == ANIM_UPDATE) opName = "Update";
 
-    DrawUI(opName, 1056, 166, 18, theme.textMuted);
-
-    if (op.pseudo.empty()) {
-        DrawUI("No active operation", 1056, 230, 20, theme.textMuted);
-        return;
+    if (!opName.empty()) {
+        DrawUI(opName, 1020, 170, 17, theme.textMuted);
     }
 
-    int startX = 1056;
-    int startY = 226;
+    int startX = 1020;
+    int startY = 224;
     int lineHeight = 44;
 
     for (int i = 0; i < (int)op.pseudo.size(); i++) {
-        Rectangle lineRect = { (float)(startX - 12), (float)(startY + i * lineHeight - 6), 360, 34 };
+        Rectangle lineRect = { (float)(startX - 12), (float)(startY + i * lineHeight - 6), 280, 34 };
 
         if (i == op.highlightLine) {
             DrawRectangleRounded(lineRect, 0.2f, 8, theme.warningSoft);
@@ -470,33 +492,12 @@ static void DrawCodePanelMinimal(const OperationState& op, const Theme& theme) {
 }
 
 void RenderLinkedList() {
-    const int screenWidth = 1500;
-    const int screenHeight = 900;
+    const int screenWidth = 1360;
+    const int screenHeight = 850;
 
     InitWindow(screenWidth, screenHeight, "Doubly Linked List Visualization");
     SetTargetFPS(60);
-
-    Font uiTry = LoadFontEx("C:/Windows/Fonts/segoeui.ttf", 64, 0, 0);
-    if (uiTry.texture.id != 0) {
-        gUiFont = uiTry;
-        gUnloadUiFont = true;
-    }
-    else {
-        gUiFont = GetFontDefault();
-        gUnloadUiFont = false;
-    }
-    SetTextureFilter(gUiFont.texture, TEXTURE_FILTER_BILINEAR);
-
-    Font codeTry = LoadFontEx("C:/Windows/Fonts/consola.ttf", 64, 0, 0);
-    if (codeTry.texture.id != 0) {
-        gCodeFont = codeTry;
-        gUnloadCodeFont = true;
-    }
-    else {
-        gCodeFont = gUiFont;
-        gUnloadCodeFont = false;
-    }
-    SetTextureFilter(gCodeFont.texture, TEXTURE_FILTER_BILINEAR);
+    LoadGlobalFonts();
 
     srand((unsigned)time(nullptr));
 
@@ -545,12 +546,6 @@ void RenderLinkedList() {
         op.pseudo = GetPseudoCode(ANIM_SEARCH);
         op.highlightLine = 0;
         status = "Searching for " + std::to_string(value);
-
-        if (GetListSize(list) == 0) {
-            op.playing = false;
-            op.highlightLine = 5;
-            status = "List is empty";
-        }
         };
 
     auto BeginInsertFront = [&](int value) {
@@ -666,25 +661,28 @@ void RenderLinkedList() {
         status = "Search paused";
         };
 
-    InputBox inputValue(60, 168, 130, 48, WHITE, BLACK);
-    InputBox inputNew(220, 168, 130, 48, WHITE, BLACK);
-    Slider speedSlider(60, 262, 250, 14, 0.3f, 3.0f, 1.1f);
+    InputBox inputValue(60, 168, 130, 48, BLACK, WHITE);
+    InputBox inputNew(220, 168, 130, 48, BLACK, WHITE);
+    Slider speedSlider(60, 300, 230, 14, 0.3f, 3.0f, 1.1f);
 
-    ActionButton btnBack = { Rectangle{ 42, 34, 92, 40 },  "Back",       Color{245, 247, 250, 255}, theme.border };
+    Color neutralFill = Color{ 243, 244, 246, 255 };
 
-    ActionButton btnFront = { Rectangle{ 392, 164, 112, 44 }, "Add Front", theme.primarySoft, theme.primary };
-    ActionButton btnBackIns = { Rectangle{ 516, 164, 112, 44 }, "Add Back",  theme.primarySoft, theme.primary };
-    ActionButton btnDelete = { Rectangle{ 640, 164, 92, 44 },  "Delete",    theme.dangerSoft,  theme.danger };
-    ActionButton btnSearch = { Rectangle{ 744, 164, 92, 44 },  "Search",    theme.warningSoft, theme.warning };
-    ActionButton btnUpdate = { Rectangle{ 848, 164, 92, 44 },  "Update",    theme.successSoft, theme.success };
+    ActionButton btnBack = { Rectangle{ 42, 34, 92, 40 }, "Back", Color{245, 247, 250, 255}, theme.border };
 
-    ActionButton btnPlay = { Rectangle{ 392, 222, 76, 38 },  "Play",      Color{255, 237, 213, 255}, theme.warning };
-    ActionButton btnPrev = { Rectangle{ 480, 222, 76, 38 },  "Prev",      Color{241, 245, 249, 255}, theme.border };
-    ActionButton btnNext = { Rectangle{ 568, 222, 76, 38 },  "Next",      Color{241, 245, 249, 255}, theme.border };
-    ActionButton btnUndo = { Rectangle{ 656, 222, 76, 38 },  "Undo",      theme.violetSoft, theme.violet };
-    ActionButton btnRedo = { Rectangle{ 744, 222, 76, 38 },  "Redo",      theme.successSoft, theme.success };
-    ActionButton btnRandom = { Rectangle{ 832, 222, 92, 38 },  "Generate",  theme.cyanSoft, theme.cyan };
-    ActionButton btnReset = { Rectangle{ 936, 222, 68, 38 },  "Reset",     Color{241, 245, 249, 255}, theme.border };
+    ActionButton btnFront = { Rectangle{ 360, 170, 108, 42 }, "Add Front", neutralFill, theme.border };
+    ActionButton btnBackIns = { Rectangle{ 480, 170, 108, 42 }, "Add Back",  neutralFill, theme.border };
+    ActionButton btnSearch = { Rectangle{ 600, 170, 92, 42 },  "Search",    neutralFill, theme.border };
+    ActionButton btnUpdate = { Rectangle{ 704, 170, 92, 42 },  "Update",    neutralFill, theme.border };
+    ActionButton btnDelete = { Rectangle{ 808, 170, 92, 42 },  "Delete",    neutralFill, theme.border };
+
+    ActionButton btnRandom = { Rectangle{ 360, 226, 100, 40 }, "Randomize", neutralFill, theme.border };
+    ActionButton btnLoadFile = { Rectangle{ 472, 226, 100, 40 }, "Load File", theme.primarySoft, theme.primary };
+    ActionButton btnPlay = { Rectangle{ 584, 226, 56, 40 },  "Play",      neutralFill, theme.border };
+    ActionButton btnPrev = { Rectangle{ 650, 226, 56, 40 },  "Prev",      neutralFill, theme.border };
+    ActionButton btnNext = { Rectangle{ 716, 226, 56, 40 },  "Next",      neutralFill, theme.border };
+    ActionButton btnUndo = { Rectangle{ 782, 226, 60, 40 },  "Undo",      neutralFill, theme.border };
+    ActionButton btnRedo = { Rectangle{ 852, 226, 60, 40 },  "Redo",      neutralFill, theme.border };
+    ActionButton btnReset = { Rectangle{ 918, 226, 52, 40 },  "Reset",     theme.dangerSoft, theme.danger };
 
     while (!WindowShouldClose()) {
         Vector2 mousePos = GetMousePosition();
@@ -695,8 +693,10 @@ void RenderLinkedList() {
 
         inputValue.checkPressed(mousePos, mousePressed);
         inputNew.checkPressed(mousePos, mousePressed);
+
         inputValue.Update();
         inputNew.Update();
+
         speedSlider.Update(mousePos, mouseDown);
 
         bool searchTimelineEnabled = (op.type == ANIM_SEARCH);
@@ -709,6 +709,21 @@ void RenderLinkedList() {
         }
         if (mousePressed && CheckCollisionPointRec(mousePos, btnNext.rect) && !searchTimelineEnabled) {
             status = "Search controls are available after Search.";
+        }
+
+        if (IsButtonPressed(btnLoadFile, mousePos, mousePressed)) {
+            std::vector<int> loadedValues;
+            std::string resolvedPath;
+
+            if (LoadIntegerListFromAnyPath("File_Input_LinkedList.txt", loadedValues, resolvedPath)) {
+                SaveState();
+                list.loadFromVector(loadedValues);
+                ClearOperation();
+                status = "Opened File_Input_LinkedList.txt (" + std::to_string((int)loadedValues.size()) + " values)";
+            }
+            else {
+                status = "Cannot open File_Input_LinkedList.txt";
+            }
         }
 
         if (IsButtonPressed(btnBack, mousePos, mousePressed)) {
@@ -843,19 +858,17 @@ void RenderLinkedList() {
         BeginDrawing();
         ClearBackground(theme.bg);
 
-        Rectangle header = { 24, 20, 1452, 76 };
+        Rectangle header = { 24, 20, 1312, 76 };
         DrawPanel(header, 0.06f, theme, theme.panel);
-        DrawRectangleGradientH((int)header.x + 1, (int)header.y + 1, 8, (int)header.height - 2, theme.primary, theme.cyan);
 
         DrawButton(btnBack, mousePos, theme);
         DrawUI("Doubly Linked List Visualization", 180, 31, 36, theme.text);
-        DrawUI("Minimal interface with animated interaction flow", 182, 66, 18, theme.textSoft);
 
-        DrawMetricCard(1038, 29, 118, "Size", sizeText, theme);
-        DrawMetricCard(1168, 29, 118, "Head", headText, theme);
-        DrawMetricCard(1298, 29, 118, "Tail", tailText, theme);
+        DrawMetricCard(938, 29, 110, "Size", sizeText, theme);
+        DrawMetricCard(1060, 29, 110, "Head", headText, theme);
+        DrawMetricCard(1182, 29, 110, "Tail", tailText, theme);
 
-        Rectangle controls = { 24, 112, 980, 160 };
+        Rectangle controls = { 24, 112, 950, 200 };
         DrawPanel(controls, 0.06f, theme, theme.panel);
 
         DrawUI("Target", 60, 144, 18, theme.textSoft);
@@ -872,6 +885,7 @@ void RenderLinkedList() {
         DrawButton(btnSearch, mousePos, theme);
         DrawButton(btnUpdate, mousePos, theme);
 
+        DrawButton(btnLoadFile, mousePos, theme);
         DrawButton(btnPlay, mousePos, theme, searchTimelineEnabled);
         DrawButton(btnPrev, mousePos, theme, searchTimelineEnabled);
         DrawButton(btnNext, mousePos, theme, searchTimelineEnabled);
@@ -880,12 +894,13 @@ void RenderLinkedList() {
         DrawButton(btnRandom, mousePos, theme);
         DrawButton(btnReset, mousePos, theme);
 
-        Rectangle canvas = { 24, 288, 980, 560 };
+
+        Rectangle canvas = { 24, 328, 950, 450 };
         DrawLinkedListMinimal(list, canvas, op, theme);
 
         DrawCodePanelMinimal(op, theme);
 
-        Rectangle statusBar = { 24, 856, 1452, 24 };
+        Rectangle statusBar = { 24, 804, 1312, 24 };
         DrawPanel(statusBar, 0.4f, theme, theme.panel);
 
         Color dot = theme.primary;
@@ -894,14 +909,12 @@ void RenderLinkedList() {
         else if (status.find("Updated") != std::string::npos) dot = theme.warning;
         else if (status.find("not found") != std::string::npos || status.find("Not found") != std::string::npos) dot = theme.warning;
 
-        DrawCircle(44, 868, 6, dot);
-        DrawUI(status, 58, 858, 19, theme.textSoft);
+        DrawCircle(44, 816, 6, dot);
+        DrawUI(status, 58, 806, 19, theme.textSoft);
+
 
         EndDrawing();
     }
-
-    if (gUnloadCodeFont) UnloadFont(gCodeFont);
-    if (gUnloadUiFont) UnloadFont(gUiFont);
-
+    UnloadGlobalFonts();
     CloseWindow();
 }
