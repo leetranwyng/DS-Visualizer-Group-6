@@ -26,7 +26,7 @@ void InputBox::Update() {
 
     int key = GetCharPressed();
     while (key > 0) {
-        if ((key >= 32) && (key <= 125) && letterCount < 63) {
+        if ((key >= '0') && (key <= '9') && letterCount < 6) {
             text[letterCount] = (char)key;
             letterCount++;
             text[letterCount] = '\0';

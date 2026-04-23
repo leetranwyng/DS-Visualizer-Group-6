@@ -28,12 +28,12 @@ vector<pair<string, int>> pseudo = {
 
 void drawPseudo(Dijkstra* &Graph)
 {
-    float posX = 860, posY = 420;
+    float posX = 880, posY = 420;
 
-    DrawRectangleRounded({posX-10, posY-20, 500, 300}, 0.1f, 5, {255,255,255,200});
-    DrawRectangleRoundedLines({posX-10, posY-20, 500, 300}, 0.1f, 5, DARKGRAY);
+    DrawRectangleRounded({posX-10, posY-20, 430, 310}, 0.1f, 5, {255,255,255,200});
+    DrawRectangleRoundedLines({posX-10, posY-20, 430, 310}, 0.1f, 5, DARKGRAY);
 
-    DrawUIFont("Pseudocode:", posX+12, posY-60, 25, BLACK);
+    DrawUIFont("Pseudocode:", posX+12, posY-60, 30, BLACK);
 
     for (int i = 0; i < pseudo.size(); i++)
     {
@@ -44,13 +44,13 @@ void drawPseudo(Dijkstra* &Graph)
             if (currentLine == 0 || currentLine == 2) c = BLACK;
         }
 
-        DrawUIFont(pseudo[i].first.c_str(), posX+7, posY+i*30, 20, c);
+        DrawUIFont(pseudo[i].first.c_str(), posX+10, posY+i*30, 25, c);
     }
     if (sourceNode!=-1 && sourceNode<Graph->size)
     {
-        DrawUIFont(pseudo[0].first.c_str(), posX+7, posY+0*30, 20, BLUE);
-        DrawUIFont(pseudo[1].first.c_str(), posX+7, posY+1*30, 20, BLUE);
-        DrawUIFont(pseudo[2].first.c_str(), posX+7, posY+2*30, 20, BLUE);
+        DrawUIFont(pseudo[0].first.c_str(), posX+10, posY+0*30, 25, BLUE);
+        DrawUIFont(pseudo[1].first.c_str(), posX+10, posY+1*30, 25, BLUE);
+        DrawUIFont(pseudo[2].first.c_str(), posX+10, posY+2*30, 25, BLUE);
     }
 }
 
@@ -162,7 +162,7 @@ void next_step(Button*& next_button, Dijkstra*& Graph, UI*& Visual, Tool*& tool,
 
             string s1 = tool->convert(s.node);
             const char* c1 = s1.c_str();
-            DrawUIFont(c1, posU.x - MeasureUIFont(c1, 30).x / 2, posU.y - 30 / 2, 30, BLACK);
+            DrawUIFont(c1, posU.x - MeasureUIFont(c1, 30).x / 2, posU.y - 30 / 2 - 2, 30, BLACK);
         }
 
         if (currentTime > 1.5f)
@@ -178,11 +178,11 @@ void next_step(Button*& next_button, Dijkstra*& Graph, UI*& Visual, Tool*& tool,
 
             string s1 = tool->convert(s.node);
             const char* c1 = s1.c_str();
-            DrawUIFont(c1, posU.x - MeasureUIFont(c1, 30).x / 2, posU.y - 30 / 2, 30, BLACK);
+            DrawUIFont(c1, posU.x - MeasureUIFont(c1, 30).x / 2, posU.y - 30 / 2 - 2, 30, BLACK);
 
             s1 = tool->convert(s.updatedNode);
             const char* c2 = s1.c_str();
-            DrawUIFont(c2, posV.x - MeasureUIFont(c2, 30).x / 2, posV.y - 30 / 2, 30, BLACK);
+            DrawUIFont(c2, posV.x - MeasureUIFont(c2, 30).x / 2, posV.y - 30 / 2 - 2, 30, BLACK);
 
             tool->drawArrow(posU, posV, Visual->radius, GREEN);
         }
@@ -194,7 +194,7 @@ void next_step(Button*& next_button, Dijkstra*& Graph, UI*& Visual, Tool*& tool,
 
             string s1 = tool->convert(s.updatedNode);
             const char* c1 = s1.c_str();
-            DrawUIFont(c1, pos.x - MeasureUIFont(c1, 30).x / 2, pos.y - 30 / 2, 30, BLACK);
+            DrawUIFont(c1, pos.x - MeasureUIFont(c1, 30).x / 2, pos.y - 30 / 2 - 2, 30, BLACK);
         }
 
         if (currentTime > 3.0f)
@@ -208,7 +208,7 @@ void next_step(Button*& next_button, Dijkstra*& Graph, UI*& Visual, Tool*& tool,
 
                 string s1 = tool->convert(s.updatedNode);
                 const char* c1 = s1.c_str();
-                DrawUIFont(c1, posU.x - MeasureUIFont(c1, 30).x / 2, posU.y - 30 / 2, 30, BLACK);
+                DrawUIFont(c1, posU.x - MeasureUIFont(c1, 30).x / 2, posU.y - 30 / 2 - 2, 30, BLACK);
             }
         }
 
@@ -347,11 +347,12 @@ void initialize_step(Dijkstra*& Graph, UI*& Visual, Button*& initialize_button, 
         DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), {0,0,0,100});
         DrawRectangle(680 - 200 + 450, 425 - 225, 400, 450, WHITE);
         DrawRectangleLinesEx({680 - 200 + 450, 425 - 225, 400, 450}, 5, DARKGRAY);
-        DrawUIFont("Initialize Graph", 680 - 200 + 80 + 450, 425 - 225 + 10, 30, BLACK);
+
+        DrawUIFont("Initialize Graph", 680 - 200 + 80 + 480, 425 - 225 + 15, 37, BLACK);
 
         if (!isConfirmed)
         {
-            DrawUIFont("Number of vertices:", 680 - 200 + 100 + 450, 425 - 225 + 70, 20, BLACK);
+            DrawUIFont("Number of vertices:", 680 - 200 + 100 + 480 - 10, 425 - 225 + 100, 25, BLACK);
             size_input->checkPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON));
             size_input->Update();
             size_input->Draw();
@@ -379,10 +380,10 @@ void initialize_step(Dijkstra*& Graph, UI*& Visual, Button*& initialize_button, 
             }
         } else
         {
-            DrawUIFont("Vertices are indexed from 0 to n-1", 680 - 200 + 25 + 450, 425 - 225 + 60, 20, BLUE);
+            DrawUIFont("Vertices are indexed from 0 to n-1", 680 - 200 + 25 + 515, 425 - 225 + 80, 20, BLUE);
 
-            DrawUIFont("From u to v with weight w", 680 - 200 + 70 + 450, 425 - 225 + 120 + 1, 20, GREEN);
-            DrawUIFont("From u to v with weight w", 680 - 200 + 70 + 450, 425 - 225 + 120, 20, BLACK);
+            DrawUIFont("From u to v with weight w", 680 - 200 + 70 + 497, 425 - 225 + 120 + 1, 20, GREEN);
+            DrawUIFont("From u to v with weight w", 680 - 200 + 70 + 497, 425 - 225 + 120, 20, BLACK);
 
             DrawUIFont("u:", 680 - 200 + 30 + 450, 425 - 225 + 190, 20, BLACK);
             DrawUIFont("v:", 680 - 200 + 220 + 450, 425 - 225 + 190, 20, BLACK);
@@ -406,7 +407,7 @@ void initialize_step(Dijkstra*& Graph, UI*& Visual, Button*& initialize_button, 
             DrawRectangle(680 - 200 + 260 + 450, 425 - 225 + 250, 100, 50, {220, 220, 220, 255});
             if (u_input->GetValue()!=-1 && u_input->GetValue()<sizeInput && v_input->GetValue()!=-1 && v_input->GetValue()<sizeInput && w_input->GetValue()!=-1)
             {
-                DrawUIFont("Valid", 680 - 200 + 282 + 450, 425 - 228 + 265, 20, GREEN);
+                DrawUIFont("Valid", 680 - 200 + 282 + 461, 425 - 228 + 265, 20, GREEN);
                 if (addEdge_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
                 {
                     
@@ -420,7 +421,7 @@ void initialize_step(Dijkstra*& Graph, UI*& Visual, Button*& initialize_button, 
 
             } else
             {
-                DrawUIFont("Invalid", 680 - 200 + 277 + 450, 425 - 228 + 265, 20, RED);
+                DrawUIFont("Invalid", 680 - 200 + 277 + 461, 425 - 228 + 265, 20, RED);
             }
 
             if (finish_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
@@ -631,7 +632,7 @@ void RenderDijkstra()
 
         source_node->Draw();
         sourceNodeInput(source_node, Graph, Visual, tool);
-        DrawUIFont("Start Node:", 910, 230, 25, BLACK);
+        DrawUIFont("Start Node:", 920, 230, 30, BLACK);
         
         next_button->draw();
         if (!isPlaying) next_step(next_button, Graph, Visual, tool, speedSlider);
@@ -653,15 +654,18 @@ void RenderDijkstra()
         end_step(Graph, Visual, end_button);
 
         loadFile_button->draw();
-        DrawRectangleRounded({895, 140, 165, 30}, 0.3f, 8, LIGHTGRAY);
-        DrawUIFont("n m | m lines: u v w", 905, 145, 18, BLACK);
+        DrawRectangleRounded({870, 140, 200, 30}, 0.3f, 8, LIGHTGRAY);
+        DrawUIFont("n m | m lines: u v w", 915, 145, 18, BLACK);
         loadFile_step(Graph, Visual, loadFile_button);
+
+        menuBackButton->draw();
+
 
         initialize_button->draw();
         initialize_step(Graph, Visual, initialize_button, size_input, confirm_button, addEdge_button, finish_button, u_input, v_input, w_input);
    
 
-        menuBackButton->draw();
+        
         EndDrawing();
     }
 

@@ -6,6 +6,7 @@
 #include <random>
 #include <algorithm>
 #include <map>
+#include "../../UI/FontManager.h"
 
 void Dijkstra::build_size()
 {
@@ -24,7 +25,7 @@ void Dijkstra::implement(int sNode)
     d.resize(size);
     history.clear();
 
-    for (int i = 0; i < size; i++) d[i] = INT_MAX;
+    for (int i = 0; i < size; i++) d[i] = 1e9;
 
     priority_queue<edge,vector<edge>,cmp> q;
 
@@ -172,7 +173,7 @@ void UI::drawNode(Dijkstra*& logic)
             Vector2 midpoint = {(posU.x+posV.x)/2, (posU.y+posV.y)/2};
             string s = tool.convert(v.weight);
             const char* d = s.c_str();
-            DrawText(d, midpoint.x, midpoint.y, 20, BLACK);
+            DrawUIFont(d, midpoint.x, midpoint.y, 20, BLACK);
         }
     }
 
@@ -184,11 +185,11 @@ void UI::drawNode(Dijkstra*& logic)
 
         string s = tool.convert(i);
         const char* c1 = s.c_str();
-        DrawText(c1, pos.x-MeasureText(c1, 30)/2, pos.y-30/2, 30, BLACK);
+        DrawUIFont(c1, pos.x - MeasureUIFont(c1, 30).x / 2, pos.y - 30 / 2 - 2, 30, BLACK);
 
         s = tool.convert(node[i].d);
         const char* c2 = s.c_str();
-        DrawText(c2, pos.x-MeasureText(c2, 20)/2, pos.y-radius-18, 20, BLACK);
+        DrawUIFont(c2, pos.x - MeasureUIFont(c2, 20).x / 2, pos.y - radius - 18, 20, BLACK);
 
     }
 
