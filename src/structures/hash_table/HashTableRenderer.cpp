@@ -2,10 +2,26 @@
 #include "../../UI/UI.h"
 #include "HashTableRenderer.h"
 #include "../../UI/FontManager.h"
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+
+using namespace std;
+
+string getResourcePath() {
+    namespace fs = std::filesystem;
+    fs::path p = fs::current_path();
+
+    while (!fs::exists(p / "resources") && p.has_parent_path() && p != p.parent_path()) {
+        p = p.parent_path();
+    }
+
+    return (p / "resources/File_Input.txt").string();
+}
 
 void RenderHashTable() {
-    const int screenWidth = 1200;
-    const int screenHeight = 700;
+    const int screenWidth = 1360;
+    const int screenHeight = 850;
     InitWindow(screenWidth, screenHeight, "Hash Table Visualizer (LP, QP, DH, SC)");
     SetTargetFPS(60);
     LoadGlobalFonts();
@@ -29,11 +45,11 @@ void RenderHashTable() {
     float buttonHeight = 45;
 
     float bottomBarHeight = 40;
-    float startY = screenHeight - bottomBarHeight - (4 * buttonHeight) - 80;
+    float startY = screenHeight - bottomBarHeight - (4 * buttonHeight) - 95;
 
     Color menuColor = Color{ 59, 130, 246, 255 };
     Color toggleColor = Color{ 37, 99, 235, 255 };
-    Button menuBackButton(45, 18, 90, 40, "Back", Color{ 245, 247, 250, 255 });
+    Button menuBackButton(45, 30, 90, 40, "Back", Color{ 245, 247, 250, 255 });
 
     Button collapseButton(0, startY, menuWidth_Collapsed, 5 * buttonHeight, "<", toggleColor);
     Button expandButton(0, startY, menuWidth_Collapsed, 5 * buttonHeight, ">", toggleColor);
@@ -68,7 +84,7 @@ void RenderHashTable() {
     Button loadGoButton(panelX + loadLabelW, loadMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
     string loadStatusText = "";
 
-    Slider speedSlider(40, screenHeight - 40, 200, 20, 1.5f, 0.05f, 0.5f);
+    Slider speedSlider(40, screenHeight - 33, 200, 20, 1.5f, 0.05f, 0.5f);
 
     while (!WindowShouldClose()) {
         float deltaTime = GetFrameTime();
@@ -101,10 +117,10 @@ void RenderHashTable() {
         Color colorDH = (currentProbingMode == 2) ? Color{ 210, 210, 210, 255 } : Color{ 240, 240, 240, 255 };
         Color colorSC = (currentProbingMode == 3) ? Color{ 210, 210, 210, 255 } : Color{ 240, 240, 240, 255 };
 
-        Button modeBtnLP(startX_LP, 20, widthLP, 40, textLP, colorLP);
-        Button modeBtnQP(startX_QP, 20, widthQP, 40, textQP, colorQP);
-        Button modeBtnDH(startX_DH, 20, widthDH, 40, textDH, colorDH);
-        Button modeBtnSC(startX_SC, 20, widthSC, 40, textSC, colorSC);
+        Button modeBtnLP(startX_LP, 30, widthLP, 40, textLP, colorLP);
+        Button modeBtnQP(startX_QP, 30, widthQP, 40, textQP, colorQP);
+        Button modeBtnDH(startX_DH, 30, widthDH, 40, textDH, colorDH);
+        Button modeBtnSC(startX_SC, 30, widthSC, 40, textSC, colorSC);
 
         if (modeBtnLP.isPressed(mousePosition, mousePressed) && currentProbingMode != 0) { currentProbingMode = 0; currentAction = ACTION_NONE; }
         else if (modeBtnQP.isPressed(mousePosition, mousePressed) && currentProbingMode != 1) { currentProbingMode = 1; currentAction = ACTION_NONE; }
@@ -159,6 +175,12 @@ void RenderHashTable() {
                         myHash->insert(randValue, false);
                     }
                     myHash->startReveal();
+
+                    myHash->codeTitle = "Created " + to_string(n) + " items!";
+                    myHash->codeStatus = "Random generation complete.";
+                    myHash->pseudoCode = { "// Successfully initialized table", "// with random data." };
+                    myHash->activeCodeLine = -1;
+
                     mInput.Clear(); nInput.Clear();
                 }
             }
@@ -175,7 +197,9 @@ void RenderHashTable() {
                 if (v != -1) { myHash->erase(v); removeVInput.Clear(); }
             }
             else if (currentAction == ACTION_LOAD && loadGoButton.isPressed(mousePosition, mousePressed)) {
-                ifstream ifs(getResourcesPath("File_Input.txt").c_str());
+
+                string filePath = getResourcePath();
+                ifstream ifs(filePath);
 
                 if (ifs.is_open()) {
                     vector<int> fileVals;
@@ -195,9 +219,21 @@ void RenderHashTable() {
 
                     myHash->startReveal();
                     loadStatusText = "Loaded " + to_string(fileVals.size()) + " items!";
+
+                    // CẬP NHẬT TEXT CODE BOX TỪ BẢN UPDATED
+                    myHash->codeTitle = "Loaded " + to_string(fileVals.size()) + " items!";
+                    myHash->codeStatus = "File read successfully.";
+                    myHash->pseudoCode = { "// Data loaded from File_Input.txt." };
+                    myHash->activeCodeLine = -1;
                 }
                 else {
                     loadStatusText = "Error: File not found!";
+
+                    // CẬP NHẬT TEXT CODE BOX TỪ BẢN UPDATED
+                    myHash->codeTitle = "Error: File not found!";
+                    myHash->codeStatus = "Failed to open input file.";
+                    myHash->pseudoCode = { "// Please ensure that File_Input.txt exists", "// in the resources directory." };
+                    myHash->activeCodeLine = -1;
                 }
             }
         }
@@ -284,7 +320,7 @@ void RenderHashTable() {
                 removeGoButton.draw(false, true, false);
                 break;
             case ACTION_LOAD:
-                DrawUIFont("Read 'input.txt'", panelX, loadMenuButton.rect.y + labelOffsetY, 20, BLACK);
+                DrawUIFont("Read 'File_Input.txt'", panelX, loadMenuButton.rect.y + labelOffsetY, 20, BLACK);
                 loadGoButton.draw(false, true, false);
                 if (!loadStatusText.empty()) {
                     Color statusColor = (loadStatusText[0] == 'E') ? RED : BLUE;
