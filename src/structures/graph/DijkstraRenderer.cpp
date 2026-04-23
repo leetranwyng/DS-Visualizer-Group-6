@@ -2,6 +2,7 @@
 #include "DijkstraRenderer.h"
 #include <iostream>
 #include <fstream>
+#include "../../UI/FontManager.h"
 
 int sourceNode = -1, old_sourceNode = -1;
 int isNextStep = 0, isPlaying = 0, currentLine = -100;
@@ -32,7 +33,7 @@ void drawPseudo(Dijkstra* &Graph)
     DrawRectangleRounded({posX-10, posY-20, 500, 300}, 0.1f, 5, {255,255,255,200});
     DrawRectangleRoundedLines({posX-10, posY-20, 500, 300}, 0.1f, 5, DARKGRAY);
 
-    DrawText("Pseudocode:", posX+12, posY-60, 25, BLACK);
+    DrawUIFont("Pseudocode:", posX+12, posY-60, 25, BLACK);
 
     for (int i = 0; i < pseudo.size(); i++)
     {
@@ -43,13 +44,13 @@ void drawPseudo(Dijkstra* &Graph)
             if (currentLine == 0 || currentLine == 2) c = BLACK;
         }
 
-        DrawText(pseudo[i].first.c_str(), posX+7, posY+i*30, 20, c);
+        DrawUIFont(pseudo[i].first.c_str(), posX+7, posY+i*30, 20, c);
     }
     if (sourceNode!=-1 && sourceNode<Graph->size)
     {
-        DrawText(pseudo[0].first.c_str(), posX+7, posY+0*30, 20, BLUE);
-        DrawText(pseudo[1].first.c_str(), posX+7, posY+1*30, 20, BLUE);
-        DrawText(pseudo[2].first.c_str(), posX+7, posY+2*30, 20, BLUE);
+        DrawUIFont(pseudo[0].first.c_str(), posX+7, posY+0*30, 20, BLUE);
+        DrawUIFont(pseudo[1].first.c_str(), posX+7, posY+1*30, 20, BLUE);
+        DrawUIFont(pseudo[2].first.c_str(), posX+7, posY+2*30, 20, BLUE);
     }
 }
 
@@ -94,10 +95,8 @@ void next_step(Button*& next_button, Dijkstra*& Graph, UI*& Visual, Tool*& tool,
             int indexMax = disHistory[upd.updatedNode].size();
             oldHistory.push_back(upd);
 
-
             while (Graph->history.size() && Graph->history[0].node == s.node)
             {
-
                 upd = Graph->history[0];
                 disHistory[upd.updatedNode].push_back(upd.newDis);
                 indexMax = disHistory[upd.updatedNode].size();
@@ -115,112 +114,109 @@ void next_step(Button*& next_button, Dijkstra*& Graph, UI*& Visual, Tool*& tool,
                 }
             }
 
-            isNextStep = currentHistory.size();
+            isNextStep = (int)currentHistory.size();
             currentTime = 0;
         }
-        else isPlaying = 0;
+        else
+        {
+            isPlaying = 0;
+        }
     }
 
     if (isNextStep)
     {
         state s = currentHistory[currentHistory.size() - isNextStep];
         float dt = GetFrameTime();
-        currentTime += dt*speedSlider;
-        if (currentTime <= 0.5)
+        currentTime += dt * speedSlider;
+
+        if (currentTime <= 0.5f)
         {
             currentLine = 0;
-        } else
-        if (currentTime <= 1.5)
+        }
+        else if (currentTime <= 1.5f)
         {
-            currentLine = 1; 
-        } else 
-        if (currentTime <= 2.5)
+            currentLine = 1;
+        }
+        else if (currentTime <= 2.5f)
         {
             currentLine = 2;
-        } else 
-        if (currentTime <= 3)
+        }
+        else if (currentTime <= 3.0f)
         {
             currentLine = 3;
-        } else 
-        if (currentTime <= 3.5)
+        }
+        else if (currentTime <= 3.5f)
         {
             if (Visual->node[s.updatedNode].d != s.newDis) currentLine = 4;
-        } else
+        }
+        else
         {
             currentLine = -100;
         }
 
-        if (currentTime > 0.5)
+        if (currentTime > 0.5f)
         {
             Vector2 posU = Visual->node[s.node].pos;
             DrawCircle(posU.x, posU.y, Visual->radius, WHITE);
-            DrawCircle(posU.x, posU.y, Visual->radius, {80,140,255,180});
+            DrawCircle(posU.x, posU.y, Visual->radius, Color{ 80, 140, 255, 180 });
 
             string s1 = tool->convert(s.node);
             const char* c1 = s1.c_str();
-            DrawText(c1, posU.x-MeasureText(c1, 30)/2, posU.y-30/2, 30, BLACK);
+            DrawUIFont(c1, posU.x - MeasureUIFont(c1, 30).x / 2, posU.y - 30 / 2, 30, BLACK);
         }
 
-        if (currentTime > 1.5)
+        if (currentTime > 1.5f)
         {
-            
             Vector2 posU = Visual->node[s.node].pos;
             Vector2 posV = Visual->node[s.updatedNode].pos;
 
             DrawLineEx(posU, posV, 2.0f, GREEN);
             DrawCircle(posU.x, posU.y, Visual->radius, WHITE);
             DrawCircle(posV.x, posV.y, Visual->radius, WHITE);
-            DrawCircle(posU.x, posU.y, Visual->radius, {80,140,255,180});
-            DrawCircle(posV.x, posV.y, Visual->radius, {120,120,120,225});
+            DrawCircle(posU.x, posU.y, Visual->radius, Color{ 80, 140, 255, 180 });
+            DrawCircle(posV.x, posV.y, Visual->radius, Color{ 120, 120, 120, 225 });
 
             string s1 = tool->convert(s.node);
             const char* c1 = s1.c_str();
-            DrawText(c1, posU.x-MeasureText(c1, 30)/2, posU.y-30/2, 30, BLACK);
+            DrawUIFont(c1, posU.x - MeasureUIFont(c1, 30).x / 2, posU.y - 30 / 2, 30, BLACK);
 
             s1 = tool->convert(s.updatedNode);
             const char* c2 = s1.c_str();
-            DrawText(c2, posV.x-MeasureText(c2, 30)/2, posV.y-30/2, 30, BLACK);
+            DrawUIFont(c2, posV.x - MeasureUIFont(c2, 30).x / 2, posV.y - 30 / 2, 30, BLACK);
 
             tool->drawArrow(posU, posV, Visual->radius, GREEN);
-
-
         }
 
-        if (currentTime > 2.5)
+        if (currentTime > 2.5f)
         {
-            
             Vector2 pos = Visual->node[s.updatedNode].pos;
             DrawCircle(pos.x, pos.y, Visual->radius, ORANGE);
 
             string s1 = tool->convert(s.updatedNode);
             const char* c1 = s1.c_str();
-            DrawText(c1, pos.x-MeasureText(c1, 30)/2, pos.y-30/2, 30, BLACK);
-
+            DrawUIFont(c1, pos.x - MeasureUIFont(c1, 30).x / 2, pos.y - 30 / 2, 30, BLACK);
         }
 
-        if (currentTime > 3)
+        if (currentTime > 3.0f)
         {
-            
             Visual->node[s.updatedNode].d = s.newDis;
             if (currentLine == 4)
             {
                 Vector2 posU = Visual->node[s.updatedNode].pos;
                 DrawCircle(posU.x, posU.y, Visual->radius, WHITE);
-                DrawCircle(posU.x, posU.y, Visual->radius, {80,200,120,160});
+                DrawCircle(posU.x, posU.y, Visual->radius, Color{ 80, 200, 120, 160 });
 
                 string s1 = tool->convert(s.updatedNode);
                 const char* c1 = s1.c_str();
-                DrawText(c1, posU.x-MeasureText(c1, 30)/2, posU.y-30/2, 30, BLACK);
+                DrawUIFont(c1, posU.x - MeasureUIFont(c1, 30).x / 2, posU.y - 30 / 2, 30, BLACK);
             }
         }
 
-        if (currentTime > 3.5)
+        if (currentTime > 3.5f)
         {
             isNextStep--;
             currentTime = 0;
         }
-
-
     }
 }
 
@@ -351,11 +347,11 @@ void initialize_step(Dijkstra*& Graph, UI*& Visual, Button*& initialize_button, 
         DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), {0,0,0,100});
         DrawRectangle(680 - 200 + 450, 425 - 225, 400, 450, WHITE);
         DrawRectangleLinesEx({680 - 200 + 450, 425 - 225, 400, 450}, 5, DARKGRAY);
-        DrawText("Initialize Graph", 680 - 200 + 80 + 450, 425 - 225 + 10, 30, BLACK);
+        DrawUIFont("Initialize Graph", 680 - 200 + 80 + 450, 425 - 225 + 10, 30, BLACK);
 
         if (!isConfirmed)
         {
-            DrawText("Number of vertices:", 680 - 200 + 100 + 450, 425 - 225 + 70, 20, BLACK);
+            DrawUIFont("Number of vertices:", 680 - 200 + 100 + 450, 425 - 225 + 70, 20, BLACK);
             size_input->checkPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON));
             size_input->Update();
             size_input->Draw();
@@ -366,7 +362,7 @@ void initialize_step(Dijkstra*& Graph, UI*& Visual, Button*& initialize_button, 
 
             if (sizeInput!=-1)
             {
-                DrawText("Valid", 680 - 200 + 315 + 450, 425 - 225 + 165, 15, GREEN);
+                DrawUIFont("Valid", 680 - 200 + 315 + 450, 425 - 225 + 165, 15, GREEN);
                 
                 if (confirm_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
                 {
@@ -379,18 +375,18 @@ void initialize_step(Dijkstra*& Graph, UI*& Visual, Button*& initialize_button, 
 
             } else
             {
-                DrawText("Invalid", 680 - 200 + 315 + 450, 425 - 225 + 165, 15, RED);
+                DrawUIFont("Invalid", 680 - 200 + 315 + 450, 425 - 225 + 165, 15, RED);
             }
         } else
         {
-            DrawText("Vertices are indexed from 0 to n-1", 680 - 200 + 25 + 450, 425 - 225 + 60, 20, BLUE);
+            DrawUIFont("Vertices are indexed from 0 to n-1", 680 - 200 + 25 + 450, 425 - 225 + 60, 20, BLUE);
 
-            DrawText("From u to v with weight w", 680 - 200 + 70 + 450, 425 - 225 + 120 + 1, 20, GREEN);
-            DrawText("From u to v with weight w", 680 - 200 + 70 + 450, 425 - 225 + 120, 20, BLACK);
+            DrawUIFont("From u to v with weight w", 680 - 200 + 70 + 450, 425 - 225 + 120 + 1, 20, GREEN);
+            DrawUIFont("From u to v with weight w", 680 - 200 + 70 + 450, 425 - 225 + 120, 20, BLACK);
 
-            DrawText("u:", 680 - 200 + 30 + 450, 425 - 225 + 190, 20, BLACK);
-            DrawText("v:", 680 - 200 + 220 + 450, 425 - 225 + 190, 20, BLACK);
-            DrawText("w:", 680 - 200 + 30 + 450, 425 - 225 + 260, 20, BLACK);
+            DrawUIFont("u:", 680 - 200 + 30 + 450, 425 - 225 + 190, 20, BLACK);
+            DrawUIFont("v:", 680 - 200 + 220 + 450, 425 - 225 + 190, 20, BLACK);
+            DrawUIFont("w:", 680 - 200 + 30 + 450, 425 - 225 + 260, 20, BLACK);
 
             u_input->checkPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON));
             v_input->checkPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON));
@@ -410,7 +406,7 @@ void initialize_step(Dijkstra*& Graph, UI*& Visual, Button*& initialize_button, 
             DrawRectangle(680 - 200 + 260 + 450, 425 - 225 + 250, 100, 50, {220, 220, 220, 255});
             if (u_input->GetValue()!=-1 && u_input->GetValue()<sizeInput && v_input->GetValue()!=-1 && v_input->GetValue()<sizeInput && w_input->GetValue()!=-1)
             {
-                DrawText("Valid", 680 - 200 + 282 + 450, 425 - 228 + 265, 20, GREEN);
+                DrawUIFont("Valid", 680 - 200 + 282 + 450, 425 - 228 + 265, 20, GREEN);
                 if (addEdge_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
                 {
                     
@@ -424,7 +420,7 @@ void initialize_step(Dijkstra*& Graph, UI*& Visual, Button*& initialize_button, 
 
             } else
             {
-                DrawText("Invalid", 680 - 200 + 277 + 450, 425 - 228 + 265, 20, RED);
+                DrawUIFont("Invalid", 680 - 200 + 277 + 450, 425 - 228 + 265, 20, RED);
             }
 
             if (finish_button->isPressed(GetMousePosition(), IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
@@ -552,6 +548,7 @@ void RenderDijkstra()
 
     InitWindow(screenWidth, screenHeight, "Dijkstra visualization");
     SetTargetFPS(60);
+    LoadGlobalFonts();
 
     resetState();
 
@@ -563,12 +560,12 @@ void RenderDijkstra()
     
     Button* random_button = new Button(1100, 40, 200, 50, "Random", LIGHTGRAY);
 
-    InputBox* source_node = new InputBox(1100, 220, 200, 50);
+    InputBox* source_node = new InputBox(1100, 220, 200, 50, BLACK, WHITE);
 
     Button* next_button = new Button(480, 655, 120, 50, "Next", LIGHTGRAY);
     Tool* tool = new Tool;
 
-    Button* back_button = new Button(170, 655, 120, 50, "Back", LIGHTGRAY);
+    Button* back_button = new Button(170, 655, 120, 50, "Prev", LIGHTGRAY);
 
     Button* play_button = new Button(325, 655, 120, 50, "Play", LIGHTGRAY);
 
@@ -580,15 +577,15 @@ void RenderDijkstra()
 
     Button* initialize_button = new Button(870, 40, 200, 50, "Initialize", LIGHTGRAY);
 
-    InputBox* size_input = new InputBox(680 - 200 + 100 + 450, 425 - 225 + 150, 200, 50);
-
     Button* confirm_button = new Button(680 - 200 + 100 + 450, 425 - 225 + 300, 200, 50, "Confirm", LIGHTGRAY);
 
-    InputBox* u_input = new InputBox(680 - 200 + 70 + 450, 425 - 225 + 180, 100, 50);
+    InputBox* size_input = new InputBox(680 - 200 + 100 + 450, 425 - 225 + 150, 200, 50, BLACK, WHITE);
 
-    InputBox* v_input = new InputBox(680 - 200 + 260 + 450, 425 - 225 + 180, 100, 50);
+    InputBox* u_input = new InputBox(680 - 200 + 70 + 450, 425 - 225 + 180, 100, 50, BLACK, WHITE);
 
-    InputBox* w_input = new InputBox(680 - 200 + 70 + 450, 425 - 225 + 250, 100, 50);
+    InputBox* v_input = new InputBox(680 - 200 + 260 + 450, 425 - 225 + 180, 100, 50, BLACK, WHITE);
+
+    InputBox* w_input = new InputBox(680 - 200 + 70 + 450, 425 - 225 + 250, 100, 50, BLACK, WHITE);
 
     Button* addEdge_button = new Button(680 - 200 + 70 + 450, 425 - 225 + 320, 100, 50, "Add Edge", LIGHTGRAY);
 
@@ -596,8 +593,17 @@ void RenderDijkstra()
 
     Button* loadFile_button = new Button(1100, 130, 200, 50, "Load File", LIGHTGRAY);
 
+    Button* menuBackButton = new Button(1150, 760, 160, 55, "Back", LIGHTGRAY);
+
     while (!WindowShouldClose())
     {
+        Vector2 mousePos = GetMousePosition();
+        bool mousePressed = IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
+
+        if (menuBackButton->isPressed(mousePos, mousePressed)) {
+            break;
+        }
+
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
@@ -615,17 +621,17 @@ void RenderDijkstra()
         
         speedSlider = speed_slider->GetValue();
         speedSlider = scaleSpeed(speedSlider);
-        DrawText("Speed:", 150, 770, 20, BLACK);
+        DrawUIFont("Speed:", 150, 770, 20, BLACK);
         char buf[20];
         sprintf(buf, "%.1fx", speedSlider);
-        DrawText(buf, 590, 770, 20, BLACK);
+        DrawUIFont(buf, 590, 770, 20, BLACK);
 
         random_button->draw();
         random_step(random_button, Graph, Visual, tool);
 
         source_node->Draw();
         sourceNodeInput(source_node, Graph, Visual, tool);
-        DrawText("Start Node:", 910, 230, 25, BLACK);
+        DrawUIFont("Start Node:", 910, 230, 25, BLACK);
         
         next_button->draw();
         if (!isPlaying) next_step(next_button, Graph, Visual, tool, speedSlider);
@@ -648,15 +654,17 @@ void RenderDijkstra()
 
         loadFile_button->draw();
         DrawRectangleRounded({895, 140, 165, 30}, 0.3f, 8, LIGHTGRAY);
-        DrawText("n m | m lines: u v w", 905, 145, 18, BLACK);
+        DrawUIFont("n m | m lines: u v w", 905, 145, 18, BLACK);
         loadFile_step(Graph, Visual, loadFile_button);
 
         initialize_button->draw();
         initialize_step(Graph, Visual, initialize_button, size_input, confirm_button, addEdge_button, finish_button, u_input, v_input, w_input);
-        
+   
 
+        menuBackButton->draw();
         EndDrawing();
     }
 
+    UnloadGlobalFonts();
     CloseWindow();
 }

@@ -5,12 +5,28 @@
 #include <string>
 #include <cmath>
 
-#include "../tree/AVL.h" 
-#include "../../UI/UI.h" 
+#include "../tree/AVL.h"
+#include "../../UI/UI.h"
 
 #define MAX_SIZE 100001ll
 
 using namespace std;
+
+struct SCNodeShape {
+    TreeNode* node;
+    Vector2 current;
+    Vector2 target;
+    float radius;
+    Color color;
+};
+
+struct SCEdgeShape {
+    TreeNode* parent;
+    TreeNode* child;
+    Vector2 start;
+    Vector2 end;
+    Color color;
+};
 
 class hashTableVis {
 public:
@@ -22,12 +38,12 @@ public:
     bitset<MAX_SIZE> isPrime;
 
     vector<TreeNode*> chainingTable;
-    vector<NodeShape> scNodes;
-    vector<EdgeShape> scEdges;
+    vector<SCNodeShape> scNodes;
+    vector<SCEdgeShape> scEdges;
 
     bool hasActiveAnimation;
     int animType; // 1: Insert, 2: Search, 3: Erase
-    int probingMode; // 0: Linear, 1: Quadaratic, 2: Double hashing, 3: Separate Chaining
+    int probingMode; // 0: Linear, 1: Quadratic, 2: Double hashing, 3: Separate Chaining
     vector<int> probePath;
     int currentProbeIndex;
     int animatingValue;
@@ -78,7 +94,7 @@ public:
     int search(int value, bool animate = true);
 
     void recomputeSCLayout(int screenWidth);
-    NodeShape* findSCNode(TreeNode* node);
+    SCNodeShape* findSCNode(TreeNode* node);
     void buildSCEdges(int screenWidth);
 
     void updateAnimation(float dt);

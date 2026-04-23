@@ -1,5 +1,6 @@
 #pragma once
-#include "raylib.h"
+#include "AVL.h"
+#include "../../UI/UI.h"
 #include <vector>
 #include <string>
 #include <functional>
@@ -7,10 +8,21 @@
 
 using namespace std;
 
-struct TreeNode;
-struct AVL;
-struct NodeShape;
-struct EdgeShape;
+struct NodeShape {
+    TreeNode* node;
+    Vector2 current;
+    Vector2 target;
+    float radius;
+    Color color;
+};
+
+struct EdgeShape {
+    TreeNode* parent;
+    TreeNode* child;
+    Vector2 start;
+    Vector2 end;
+    Color color;
+};
 
 const int AVL_ACTION_NONE = 0;
 const int AVL_ACTION_INSERT = 1;
@@ -21,7 +33,7 @@ const int AVL_ACTION_DELETE = 5;
 
 struct AVLevent {
     EventType type;
-    TreeNode* nodeVal; //affected node
+    TreeNode* nodeVal;
 };
 
 struct AVLRender {
@@ -44,7 +56,7 @@ struct AVLRender {
         isVisualizing = false;
         isPlaying = false;
         stepMode = false;
-    };
+    }
 
     void handleEvent(EventType type, TreeNode* node);
     void processEvent(const AVLevent& e);

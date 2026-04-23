@@ -1,6 +1,7 @@
 #include "AVL.h"
 #include "AVLRenderer.h"
 #include "../../UI/UI.h"
+#include "../../UI/FontManager.h"
 
 void AVLRender::recomputeLayout() {
     if (!tree || !tree->root) return;
@@ -161,27 +162,26 @@ void AVLRender::draw() {
         DrawCircleV(n.current, n.radius, n.color);
         string text = to_string(n.node->value);
         int fontSize = 20;
-        int textWidth = MeasureText(text.c_str(), fontSize);
+        int textWidth = MeasureUIFont(text.c_str(), fontSize).x;
 
-        DrawText(text.c_str(), n.current.x - textWidth / 2, n.current.y - fontSize / 2, fontSize, WHITE);
+        DrawUIFont(text.c_str(), n.current.x - textWidth / 2, n.current.y - fontSize / 2, fontSize, WHITE);
     }
 }
 
 void DrawPseudoCode(Rectangle rect, const vector<string>& lines) {
-    Color TURQUOISE = {175, 238, 238, 220};
-    DrawRectangleRec(rect, Fade(TURQUOISE, 0.95f));
-    DrawRectangleLinesEx(rect, 2, DARKGRAY);
-    DrawText("Pseudo-code", rect.x + 10, rect.y - 25, 20, DARKGRAY);
+    DrawModernPanel(rect, Color{ 236, 248, 250, 255 }, Color{ 140, 170, 175, 255 });
+    DrawModernTitle(rect.x + 10, rect.y - 30, "Pseudo-code", Color{ 70, 80, 90, 255 });
 
     int fontSize = 18;
-    int padding = 10;
-    for (int i = 0; i < lines.size(); i++) {
-        DrawText(lines[i].c_str(), rect.x + padding, rect.y + padding + i * (fontSize + 6), fontSize, BLACK);
+    int padding = 12;
+    for (int i = 0; i < (int)lines.size(); i++) {
+        DrawCodeFont(lines[i], rect.x + padding, rect.y + padding + i * (fontSize + 8), fontSize, BLACK);
     }
 }
 
 void RenderAVL() {
     InitWindow(1360, 850, "AVL Visualizer");
+    LoadGlobalFonts();
     float screenW = GetScreenWidth(), screenH = GetScreenHeight();
     float pseudoWidth  = 380, pseudoHeight = 200;
     SetTargetFPS(60);
@@ -209,6 +209,7 @@ void RenderAVL() {
     Color menuColor = {210, 80, 50, 255};
     Color toggleColor = {190, 60, 40, 255};
     Color buttonBlue = {66, 133, 244, 255};
+    Button menuBackButton(45, 20, 92, 40, "Back", Color{ 245, 247, 250, 255 });
 
     Button collapseButton(0, startY, menuWidth_Collapsed, buttonHeight, "<", toggleColor);
     Button expandButton(0, startY, menuWidth_Collapsed, buttonHeight, ">", toggleColor);
@@ -221,14 +222,14 @@ void RenderAVL() {
     Button randomBtn(panelX, initMenuButton.rect.y, 100, buttonHeight, "Random", toggleColor);
     Button fileBtn(panelX + 110, initMenuButton.rect.y, 100, buttonHeight, "File", toggleColor);
     
-    InputBox insertInput(panelX + MeasureText("v = ", 20), insertMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
+    InputBox insertInput(panelX + MeasureUIFont("v = ", 20).x, insertMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
     Button insertGoButton(insertInput.rect.x + insertInput.rect.width + 5, insertMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
 
-    InputBox findInput(panelX + MeasureText("v = ", 20), findMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
+    InputBox findInput(panelX + MeasureUIFont("v = ", 20).x, findMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
     Button findGoButton(findInput.rect.x + findInput.rect.width + 5, findMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
 
-    InputBox updateInput(panelX + MeasureText("v = ", 20), updateMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
-    InputBox valueUpdated(panelX + MeasureText("v = ", 20) + updateInput.rect.width + MeasureText("to v = ", 20) + 10, updateMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
+    InputBox updateInput(panelX + MeasureUIFont("v = ", 20).x, updateMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
+    InputBox valueUpdated(panelX + MeasureUIFont("v = ", 20).x + updateInput.rect.width + MeasureUIFont("to v = ", 20).x + 10, updateMenuButton.rect.y, 100, buttonHeight, BLACK, WHITE);
     Button updateGoButton(valueUpdated.rect.x + valueUpdated.rect.width + 5, updateMenuButton.rect.y, 50, buttonHeight, "Go", toggleColor);
 
     Button deleteWholeTree(panelX, deleteMenuButton.rect.y, 180, buttonHeight, "Delete Tree", toggleColor);
@@ -246,6 +247,9 @@ void RenderAVL() {
         Vector2 mousePos = GetMousePosition();
         bool mousePressed = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
         bool mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
+        if (menuBackButton.isPressed(mousePos, mousePressed)) {
+            break;
+        }
         if (isSelecting && mousePressed) {
             for (auto &n : render.nodes) {
                 float dx = mousePos.x - n.current.x;
@@ -527,6 +531,7 @@ void RenderAVL() {
         ClearBackground(RAYWHITE);
         render.draw();
         DrawRectangle(0, 0, 35, screenH, BLACK);
+        menuBackButton.draw();
 
         if (isMenuExpanded) {
             DrawFlatButton(initMenuButton.rect, "Init", menuColor, true);
@@ -583,5 +588,6 @@ void RenderAVL() {
         DrawPseudoCode(pseudoRect, pseudo);
         EndDrawing();
     }
+    UnloadGlobalFonts();
     CloseWindow();
 }
