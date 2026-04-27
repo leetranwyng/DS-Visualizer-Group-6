@@ -44,9 +44,9 @@ This project helps users understand how data structures behave through real-time
 powershell
 cd <project_root>
 
-# Clean build (optional)
+#### Clean build (optional)
 Remove-Item -Recurse -Force build
-# Configure
+#### Configure
 cmake -S . -B build
-# Build
+#### Build
 cmake --build build
